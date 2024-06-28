@@ -13,13 +13,20 @@ public class LoadBalancerHolder {
     public static synchronized LoadBalancer get() {
         if (loadBalancer == null) {
             LoadBalancerType loadBalanceType = PalmxConfig.getLoadBalanceType();
-            loadBalancer = switch (loadBalanceType) {
-                case RANDOM -> new RandomLoadBalancer();
-                case ROUND_ROBIN -> new RoundRobinLoadBalancer();
-                case CONSISTENT_HASH -> new ConsistentHashLoadBalancer();
-            };
+            switch (loadBalanceType) {
+                case RANDOM:
+                    loadBalancer = new RandomLoadBalancer();
+                    break;
+                case ROUND_ROBIN:
+                    loadBalancer = new RoundRobinLoadBalancer();
+                    break;
+                case CONSISTENT_HASH:
+                    loadBalancer = new ConsistentHashLoadBalancer();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown load balance type: " + loadBalanceType);
+            }
         }
-
         return loadBalancer;
     }
 }

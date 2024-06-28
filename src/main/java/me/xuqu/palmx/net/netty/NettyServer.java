@@ -40,9 +40,7 @@ public class NettyServer extends AbstractPalmxServer {
 
                 // 通信协议数据包解码器
                 pipeline.addLast(new ProtocolFrameDecoder());
-
                 pipeline.addLast(new MessageCodec());
-
                 pipeline.addLast(new RpcInvocationHandler());
                 pipeline.addLast(new IdleStateHandler(0, 5, 0));
             }
@@ -57,11 +55,9 @@ public class NettyServer extends AbstractPalmxServer {
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             serverSocketChannel = (ServerSocketChannel) channelFuture.channel();
             log.info("Netty server{} has been started", serverSocketChannel);
-            Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override

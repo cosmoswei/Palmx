@@ -4,12 +4,13 @@ import me.xuqu.palmx.exception.ServiceNotFoundException;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
-        String serviceAddress = "%s:%d".formatted(inetSocketAddress.getHostString(), inetSocketAddress.getPort());
+        String serviceAddress = String.format("%s:%d", inetSocketAddress.getHostString(), inetSocketAddress.getPort());
         doRegister(serviceName, serviceAddress);
     }
 
@@ -20,7 +21,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         List<InetSocketAddress> inetSocketAddresses = serviceAddresses.stream().map(s -> {
             String[] strings = s.split(":");
             return new InetSocketAddress(strings[0], Integer.parseInt(strings[1]));
-        }).toList();
+        }).collect(Collectors.toList());
 
         if (inetSocketAddresses.size() == 0) {
             throw new ServiceNotFoundException(serviceName);

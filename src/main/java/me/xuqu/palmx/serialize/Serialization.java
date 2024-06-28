@@ -13,22 +13,50 @@ public interface Serialization {
     <T> T deserialize(Class<T> tClass, byte[] bytes);
 
     static <T> byte[] serialize(byte idx, T t) {
-        return switch (SerializationType.values()[idx]) {
-            case JAVA -> java().serialize(t);
-            case JSON -> json().serialize(t);
-            case KRYO -> kryo().serialize(t);
-            case PROTOSTUFF -> protostuff().serialize(t);
-        };
+        SerializationType type = SerializationType.values()[idx];
+        Object serializedObject = null;
+        switch (type) {
+            case JAVA:
+                serializedObject = java().serialize(t);
+                break;
+            case JSON:
+                serializedObject = json().serialize(t);
+                break;
+            case KRYO:
+                serializedObject = kryo().serialize(t);
+                break;
+            case PROTOSTUFF:
+                serializedObject = protostuff().serialize(t);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown serialization type: " + type);
+        }
+        return (byte[]) serializedObject;
     }
 
 
     static <T> T deserialize(byte idx, Class<T> tClass, byte[] bytes) {
-        return switch (SerializationType.values()[idx]) {
-            case JAVA -> java().deserialize(tClass, bytes);
-            case JSON -> json().deserialize(tClass, bytes);
-            case KRYO -> kryo().deserialize(tClass, bytes);
-            case PROTOSTUFF -> protostuff().deserialize(tClass, bytes);
-        };
+        Object deserializedObject = null;
+        SerializationType type = SerializationType.values()[idx];
+
+        switch (type) {
+            case JAVA:
+                deserializedObject = java().deserialize(tClass, bytes);
+                break;
+            case JSON:
+                deserializedObject = json().deserialize(tClass, bytes);
+                break;
+            case KRYO:
+                deserializedObject = kryo().deserialize(tClass, bytes);
+                break;
+            case PROTOSTUFF:
+                deserializedObject = protostuff().deserialize(tClass, bytes);
+                break;
+            default:
+                // 处理未知的序列化类型，例如抛出异常
+                throw new IllegalArgumentException("Unknown serialization type: " + type);
+        }
+        return (T) deserializedObject;
     }
 
     class Holder {

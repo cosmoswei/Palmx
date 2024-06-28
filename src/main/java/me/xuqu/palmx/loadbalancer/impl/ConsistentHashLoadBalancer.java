@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
 
@@ -17,7 +18,7 @@ public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
 
     @Override
     protected InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName) {
-        List<String> serviceAddresses = socketAddressList.stream().map(InetSocketAddress::toString).toList();
+        List<String> serviceAddresses = socketAddressList.stream().map(InetSocketAddress::toString).collect(Collectors.toList());
 
         int identityHashCode = System.identityHashCode(socketAddressList);
         // build rpc service name by rpcRequest

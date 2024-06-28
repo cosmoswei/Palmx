@@ -28,9 +28,7 @@ public class MessageCodec extends ByteToMessageCodec<RpcMessage> {
         byteBuf.writeByte(rpcMessage.getSerializationType());
         byteBuf.writeByte(rpcMessage.getMessageType());
         byteBuf.writeByte(0xff);
-
         byte[] data = serialize(rpcMessage.getSerializationType(), rpcMessage.getData());
-
         byteBuf.writeInt(data.length);
         byteBuf.writeBytes(data);
     }
@@ -38,27 +36,21 @@ public class MessageCodec extends ByteToMessageCodec<RpcMessage> {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         int magicNumber = byteBuf.readInt();
-
         // 可以简单的校验消息的正确性，比如说魔数
         if (magicNumber != PalmxConstants.NETTY_MESSAGE_MAGIC_NUMBER) {
             log.error("Unknown message, magic number is {}", magicNumber);
             throw new PalmxException("Magic number is wrong");
         }
-
         // version
         byteBuf.readByte();
-
         int sequenceId = byteBuf.readInt();
         byte serializedType = byteBuf.readByte();
         byte messageType = byteBuf.readByte();
         // padding: 0xff
         byteBuf.readByte();
-
         int length = byteBuf.readInt();
-
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes, 0, length);
-
         if (messageType == NETTY_RPC_INVOCATION_MESSAGE) {
             RpcInvocation rpcInvocation = deserialize(serializedType, RpcInvocation.class, bytes);
             rpcInvocation.setSequenceId(sequenceId);

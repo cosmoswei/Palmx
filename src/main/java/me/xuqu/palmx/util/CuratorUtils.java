@@ -172,7 +172,7 @@ public class CuratorUtils {
 
     public String buildNodePath(String serviceName) {
         String zookeeperRootNode = PalmxConfig.getZookeeperRootNode();
-        String path = "%s/%s".formatted(zookeeperRootNode, serviceName);
+        String path = String.format("%s/%s", zookeeperRootNode, serviceName);
         if (path.startsWith("/")) {
             return path;
         }
@@ -190,7 +190,7 @@ public class CuratorUtils {
      */
     private String buildNodePath(String serviceName, String serviceAddress) {
         String zookeeperRootNode = PalmxConfig.getZookeeperRootNode();
-        String path = "%s/%s/%s".formatted(zookeeperRootNode, serviceName, serviceAddress);
+        String path = String.format("%s/%s/%s", zookeeperRootNode, serviceName, serviceAddress);
         if (path.startsWith("/")) {
             return path;
         }

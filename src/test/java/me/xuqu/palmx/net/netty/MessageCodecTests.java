@@ -41,7 +41,6 @@ public class MessageCodecTests {
     public void messageDecode() {
         ByteBuf buffer = ByteBufAllocator.DEFAULT.buffer();
         new MessageCodec().encode(null, RPC_MESSAGE, buffer);
-
         embeddedChannel.writeInbound(buffer);
     }
 }

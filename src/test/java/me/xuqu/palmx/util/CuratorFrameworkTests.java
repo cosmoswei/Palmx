@@ -56,13 +56,10 @@ public class CuratorFrameworkTests {
 
         // 测试之前先把之前的数据删除了
         deleteByServiceName();
-
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.10:8080");
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.20:8080");
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.30:8080");
-
         List<String> childrenNodes = CuratorUtils.getChildrenNodes(testServiceName);
-
         Assertions.assertEquals(3, childrenNodes.size());
     }
 }

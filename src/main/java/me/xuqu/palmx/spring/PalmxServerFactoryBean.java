@@ -4,6 +4,7 @@ import me.xuqu.palmx.net.PalmxServer;
 import me.xuqu.palmx.net.netty.NettyServer;
 import org.springframework.beans.factory.FactoryBean;
 
+
 public class PalmxServerFactoryBean implements FactoryBean<PalmxServer> {
 
     @Override

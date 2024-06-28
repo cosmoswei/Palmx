@@ -1,5 +1,6 @@
 package me.xuqu.palmx.loadbalancer;
 
+import com.google.common.collect.Lists;
 import me.xuqu.palmx.loadbalancer.impl.ConsistentHashLoadBalancer;
 import me.xuqu.palmx.loadbalancer.impl.RandomLoadBalancer;
 import me.xuqu.palmx.loadbalancer.impl.RoundRobinLoadBalancer;
@@ -23,7 +24,7 @@ public class LoadBalancerTests {
     static void init() {
         serviceMap = new HashMap<>();
 
-        serviceMap.put("service1", List.of(
+        serviceMap.put("service1", Lists.newArrayList(
                 new InetSocketAddress("10.10.10.10", 8080),
                 new InetSocketAddress("10.10.10.11", 8080),
                 new InetSocketAddress("10.10.10.12", 8080),
@@ -31,7 +32,7 @@ public class LoadBalancerTests {
                 new InetSocketAddress("10.10.10.14", 8080)
         ));
 
-        serviceMap.put("service2", List.of(
+        serviceMap.put("service2", Lists.newArrayList(
                 new InetSocketAddress("20.10.10.10", 9999),
                 new InetSocketAddress("20.10.10.11", 9999),
                 new InetSocketAddress("20.10.10.12", 9999)

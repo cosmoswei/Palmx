@@ -1,8 +1,6 @@
 package me.xuqu.palmx.common;
 
 import lombok.extern.slf4j.Slf4j;
-import me.xuqu.palmx.common.PalmxConstants.PropertyKey;
-import me.xuqu.palmx.loadbalancer.LoadBalancer;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.FileNotFoundException;
@@ -33,11 +31,13 @@ public class PalmxConfig {
 
     public static LoadBalancerType getLoadBalanceType() {
         String property = getProperty(PropertyKey.LOAD_BALANCE_TYPE);
-        return switch (property) {
-            case "round-robin" -> LoadBalancerType.ROUND_ROBIN;
-            case "consistent-hash" -> LoadBalancerType.CONSISTENT_HASH;
-            default -> LoadBalancerType.RANDOM;
-        };
+        if ("round-robin".equals(property)) {
+            return LoadBalancerType.ROUND_ROBIN;
+        } else if ("consistent-hash".equals(property)) {
+            return LoadBalancerType.CONSISTENT_HASH;
+        } else {
+            return LoadBalancerType.RANDOM;
+        }
     }
 
     public static int getPalmxServerPort() {
@@ -59,7 +59,7 @@ public class PalmxConfig {
         String zookeeperHost = getProperty(PropertyKey.ZOOKEEPER_HOST);
         String zookeeperPort = getProperty(PropertyKey.ZOOKEEPER_PORT);
         if (zookeeperHost != null && zookeeperPort != null) {
-            return "%s:%s".formatted(zookeeperHost, zookeeperPort);
+            return String.format("%s:%s", zookeeperHost, zookeeperPort);
         } else {
             return DEFAULT_ZOOKEEPER_ADDRESS;
         }
@@ -73,12 +73,15 @@ public class PalmxConfig {
     public static SerializationType getSerializationType() {
         String property = getProperty(PropertyKey.SERIALIZATION_TYPE);
         if (property != null) {
-            return switch (property) {
-                case "json" -> SerializationType.JSON;
-                case "kryo" -> SerializationType.KRYO;
-                case "protostuff" -> SerializationType.PROTOSTUFF;
-                default -> SerializationType.JAVA;
-            };
+            if ("json".equalsIgnoreCase(property)) {
+                return SerializationType.JSON;
+            } else if ("kryo".equals(property)) {
+                return SerializationType.KRYO;
+            } else if ("protostuff".equals(property)) {
+                return SerializationType.PROTOSTUFF;
+            } else {
+                return SerializationType.JAVA;
+            }
         }
 
         return SerializationType.JAVA;
