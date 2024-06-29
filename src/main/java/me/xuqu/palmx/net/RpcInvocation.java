@@ -10,6 +10,5 @@ public class RpcInvocation implements Serializable {
     private String methodName;
     private Class<?>[] parameterTypes;
     private Object[] arguments;
-
     private transient int sequenceId;
 }

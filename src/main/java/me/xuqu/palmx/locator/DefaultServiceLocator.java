@@ -6,6 +6,7 @@ import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.net.PalmxClient;
 import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.netty.NettyClient;
+import me.xuqu.palmx.net.netty.NettyHttp3Client;
 
 import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
@@ -16,12 +17,21 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DefaultServiceLocator implements ServiceLocator {
 
-    private final static PalmxClient CLIENT = new NettyClient();
+    private static PalmxClient CLIENT = null;
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T lookup(Class<T> clazz) {
         ClassLoader classLoader = clazz.getClassLoader();
+        if (CLIENT == null) {
+            synchronized (DefaultServiceLocator.class) {
+                if (PalmxConfig.getEnableQuic()) {
+                    CLIENT = new NettyHttp3Client();
+                } else {
+                    CLIENT = new NettyClient();
+                }
+            }
+        }
         T proxyObject = (T) Proxy.newProxyInstance(classLoader, new Class[]{clazz}, (proxy, method, args) -> {
             for (int i = 0; i < 3; i++) {
                 RpcInvocation rpcInvocation = new RpcInvocation();

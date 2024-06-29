@@ -45,6 +45,16 @@ public class PalmxConfig {
         return property == null ? DEFAULT_PALMX_SERVER_PORT : Integer.parseInt(property);
     }
 
+    public static boolean getEnableQuic() {
+        String property = getProperty(PropertyKey.ENABLE_QUIC);
+        return "ture".equals(property) || "Ture".equals(property);
+    }
+
+    public static int ioThreads() {
+        String property = getProperty(PropertyKey.IO_THREADS);
+        return property == null ? DEFAULT_PALMX_IO_THREADS : Integer.parseInt(property);
+    }
+
     /**
      * 获取当前项目所使用的 Zookeeper 根节点
      *

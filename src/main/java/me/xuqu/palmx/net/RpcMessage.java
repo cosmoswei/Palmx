@@ -10,6 +10,10 @@ public class RpcMessage {
     private byte serializationType;
     private Object data;
 
+    public RpcMessage() {
+        // 无参构造器
+    }
+
     public RpcMessage(int sequenceId, Object data) {
         this.sequenceId = sequenceId;
         this.data = data;

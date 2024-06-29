@@ -91,10 +91,8 @@ public class NettyClient extends AbstractPalmxClient {
     private SocketChannel newConnection(SocketAddress socketAddress) {
         Bootstrap bootstrap = new Bootstrap();
         NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-
         bootstrap.group(eventLoopGroup);
         bootstrap.channel(NioSocketChannel.class);
-
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) {

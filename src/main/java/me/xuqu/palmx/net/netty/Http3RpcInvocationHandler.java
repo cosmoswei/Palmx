@@ -1,5 +1,6 @@
 package me.xuqu.palmx.net.netty;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.incubator.codec.http3.*;
@@ -12,13 +13,15 @@ import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 
+import java.nio.charset.StandardCharsets;
+
 @Slf4j
 public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Caught a exception", cause);
-        ctx.close().syncUninterruptibly();
+//        log.error("Caught a exception", cause);
+//        ctx.close().syncUninterruptibly();
     }
 
 
@@ -32,19 +35,27 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
+        System.err.println("this is body msg = " + frame.content().toString(CharsetUtil.UTF_8));
         String msg = frame.content().toString(CharsetUtil.UTF_8);
-        RpcInvocation rpcInvocation = getRpcInvocation(msg);
+        RpcMessage rpcMessage = MessageCodecHelper.decodeRpcInvocation2(msg);
+        Object data = rpcMessage.getData();
+        ObjectMapper objectMapper = new ObjectMapper();
+        RpcInvocation rpcInvocation = null;
+        try {
+            rpcInvocation = objectMapper.readValue(objectMapper.writeValueAsBytes(data), RpcInvocation.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         RpcResponse rpcResponse = InvokeHandler.doInvoke(rpcInvocation);
-        RpcMessage rpcMessage = new RpcMessage(rpcResponse.getSequenceId(), rpcResponse);
-        byte[] bytes = InvokeHandler.obj2Byte(rpcMessage);
+        rpcResponse.setSequenceId(rpcMessage.getSequenceId());
+        RpcMessage rpcMessage2 = new RpcMessage(rpcResponse.getSequenceId(), rpcResponse);
+        byte[] bytes = InvokeHandler.obj2Byte(rpcMessage2);
         ctx.write(getDefaultHttp3HeadersFrame(bytes.length));
-        ctx.writeAndFlush(new DefaultHttp3DataFrame(
-                Unpooled.wrappedBuffer(bytes))).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
+        String str = MessageCodecHelper.encode2String(rpcMessage2);
+        DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(Unpooled.wrappedBuffer((str)
+                .getBytes(StandardCharsets.UTF_8)));
+        ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
         ReferenceCountUtil.release(frame);
-    }
-
-    private static RpcInvocation getRpcInvocation(String msg) {
-        return new RpcInvocation();
     }
 
     private static Http3HeadersFrame getDefaultHttp3HeadersFrame(int length) {
