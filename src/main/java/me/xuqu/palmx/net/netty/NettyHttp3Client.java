@@ -1,6 +1,7 @@
 package me.xuqu.palmx.net.netty;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -55,9 +56,8 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                     .authority(socketAddress.toString())
                     .scheme("https");
             streamChannel.write(frame);
-            String str = MessageCodecHelper.encode2String(rpcMessage);
-            DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(Unpooled.wrappedBuffer((str)
-                    .getBytes(StandardCharsets.UTF_8)));
+            ByteBuf encode = MessageCodecHelper.encode(rpcMessage);
+            DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
             streamChannel.writeAndFlush(defaultHttp3DataFrame);
             // 准备一个 Promise，并将其加入到 RpcResponsePacketHandler 的集合中，以该请求的序列化为键
             DefaultPromise<Object> promise = new DefaultPromise<>(quicChannel.eventLoop());

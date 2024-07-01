@@ -1,15 +1,15 @@
 package me.xuqu.palmx.net.netty;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.incubator.codec.http3.*;
-import io.netty.util.CharsetUtil;
+import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
+import io.netty.incubator.codec.http3.Http3DataFrame;
+import io.netty.incubator.codec.http3.Http3HeadersFrame;
+import io.netty.incubator.codec.http3.Http3RequestStreamInboundHandler;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConstants;
 import me.xuqu.palmx.exception.RpcInvocationException;
-import me.xuqu.palmx.net.RpcInvocation;
-import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 
 import java.util.Map;
@@ -30,14 +30,15 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
+        log.info("this is head " + ctx);
         ReferenceCountUtil.release(frame);
     }
 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-        String string = frame.content().toString(CharsetUtil.UTF_8);
-        RpcResponse rpcResponse = MessageCodecHelper.decodeResponse2(string);
+        log.info("this is body " + ctx);
+        RpcResponse rpcResponse = MessageCodecHelper.decodeResponse(frame.content());
         // 从缓存中移除该序列号的 Promise
         Promise<Object> promise = map.remove(rpcResponse.getSequenceId());
         if (promise != null) {
