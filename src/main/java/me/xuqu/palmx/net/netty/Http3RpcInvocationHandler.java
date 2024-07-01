@@ -28,14 +28,12 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-        System.err.println("this is head " + ctx);
         ReferenceCountUtil.release(frame);
     }
 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-        System.err.println("this is body msg = " + frame.content().toString(CharsetUtil.UTF_8));
         String msg = frame.content().toString(CharsetUtil.UTF_8);
         RpcMessage rpcMessage = MessageCodecHelper.decodeRpcInvocation2(msg);
         Object data = rpcMessage.getData();

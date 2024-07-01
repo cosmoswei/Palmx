@@ -30,7 +30,6 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-        System.err.println("this is head " + ctx);
         ReferenceCountUtil.release(frame);
     }
 
@@ -38,7 +37,6 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
         String string = frame.content().toString(CharsetUtil.UTF_8);
-        System.err.println("this is body msg = " + string);
         RpcResponse rpcResponse = MessageCodecHelper.decodeResponse2(string);
         // 从缓存中移除该序列号的 Promise
         Promise<Object> promise = map.remove(rpcResponse.getSequenceId());

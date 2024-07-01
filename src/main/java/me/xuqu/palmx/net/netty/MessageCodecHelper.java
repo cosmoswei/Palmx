@@ -34,16 +34,6 @@ public class MessageCodecHelper {
         return byteBuf;
     }
 
-    public static String encode2String(RpcMessage rpcMessage) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String jsonString = objectMapper.writeValueAsString(rpcMessage);
-            return jsonString;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static RpcResponse decodeResponse(ByteBuf byteBuf) {
         int magicNumber = byteBuf.readInt();
         // 可以简单的校验消息的正确性，比如说魔数
@@ -69,30 +59,6 @@ public class MessageCodecHelper {
         return null;
     }
 
-
-    public static RpcResponse decodeResponse2(String json) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            RpcMessage rpcMessage = objectMapper.readValue(json, RpcMessage.class);
-            Object data = rpcMessage.getData();
-            return objectMapper.readValue(objectMapper.writeValueAsBytes(data), RpcResponse.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static RpcMessage decodeRpcInvocation2(String json) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.readValue(json, RpcMessage.class);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public static RpcInvocation decodeRpcInvocation(ByteBuf byteBuf) {
         int magicNumber = byteBuf.readInt();
         // 可以简单的校验消息的正确性，比如说魔数
@@ -114,6 +80,39 @@ public class MessageCodecHelper {
             RpcInvocation rpcInvocation = deserialize(serializedType, RpcInvocation.class, bytes);
             rpcInvocation.setSequenceId(sequenceId);
             return rpcInvocation;
+        }
+        return null;
+    }
+
+    public static String encode2String(RpcMessage rpcMessage) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonString = objectMapper.writeValueAsString(rpcMessage);
+            return jsonString;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static RpcResponse decodeResponse2(String json) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            RpcMessage rpcMessage = objectMapper.readValue(json, RpcMessage.class);
+            Object data = rpcMessage.getData();
+            return objectMapper.readValue(objectMapper.writeValueAsBytes(data), RpcResponse.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static RpcMessage decodeRpcInvocation2(String json) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            log.info("decodeRpcInvocation2 = {}", json);
+            return objectMapper.readValue(json, RpcMessage.class);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }
