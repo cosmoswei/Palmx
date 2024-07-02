@@ -16,8 +16,8 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-//        log.error("Caught a exception", cause);
-//        ctx.close().syncUninterruptibly();
+        log.error("Caught a exception", cause);
+        ctx.close().syncUninterruptibly();
     }
 
 
