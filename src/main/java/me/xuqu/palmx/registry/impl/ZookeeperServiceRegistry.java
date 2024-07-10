@@ -24,7 +24,6 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     @Override
     protected List<String> doLookup(String serviceName) {
         List<String> childrenNodes = CuratorUtils.getChildrenNodes(serviceName);
-
         log.debug("Get services[name = {}] from zookeeper, {}", serviceName, childrenNodes);
         return childrenNodes;
     }

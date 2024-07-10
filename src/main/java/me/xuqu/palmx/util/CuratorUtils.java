@@ -1,5 +1,7 @@
 package me.xuqu.palmx.util;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
@@ -25,6 +27,8 @@ public class CuratorUtils {
      * Zookeeper Client
      */
     private CuratorFramework curatorFramework;
+
+
 
     /**
      * 判断节点是否存在
@@ -109,8 +113,6 @@ public class CuratorUtils {
      * @return 节点列表
      */
     public List<String> getChildrenNodes(String serviceName) {
-        // TODO 结果缓存
-
         try {
             String nodePath = buildNodePath(serviceName);
             List<String> services = getClient().getChildren().forPath(nodePath);
@@ -194,7 +196,6 @@ public class CuratorUtils {
         if (path.startsWith("/")) {
             return path;
         }
-
         // 把前缀 / 加上
         return "/" + path;
     }
