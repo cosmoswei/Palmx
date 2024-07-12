@@ -12,8 +12,6 @@ import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 
-import java.nio.charset.StandardCharsets;
-
 @Slf4j
 public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler {
 
@@ -27,14 +25,15 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-//        log.info("this is head " + ctx);
+        log.info("this is head {}", ctx);
         ReferenceCountUtil.release(frame);
     }
 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-//        log.info("this is body " + ctx);
+        log.info("this is body {}", ctx);
+        long start = System.currentTimeMillis();
         RpcMessage rpcMessage = MessageCodecHelper.decodeRpcMessage(frame.content());
         RpcInvocation rpcInvocation = (RpcInvocation) rpcMessage.getData();
         RpcResponse rpcResponse = InvokeHandler.doInvoke(rpcInvocation);
@@ -43,10 +42,10 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
         rpcMessage2.setMessageType(PalmxConstants.NETTY_RPC_RESPONSE_MESSAGE);
         ByteBuf encode = MessageCodecHelper.encode(rpcMessage2);
         byte[] array = encode.array();
-//        byte[] bytes = InvokeHandler.obj2Byte(rpcMessage2);
         ctx.write(getDefaultHttp3HeadersFrame(array.length));
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
         ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
+        log.info("invoke Time = {}", System.currentTimeMillis() - start);
         ReferenceCountUtil.release(frame);
     }
 
@@ -61,4 +60,6 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelInputClosed(ChannelHandlerContext ctx) {
     }
+
+
 }
