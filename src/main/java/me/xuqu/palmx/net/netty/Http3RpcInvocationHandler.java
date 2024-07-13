@@ -41,8 +41,8 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
         RpcMessage rpcMessage2 = new RpcMessage(rpcResponse.getSequenceId(), rpcResponse);
         rpcMessage2.setMessageType(PalmxConstants.NETTY_RPC_RESPONSE_MESSAGE);
         ByteBuf encode = MessageCodecHelper.encode(rpcMessage2);
-        byte[] array = encode.array();
-        ctx.write(getDefaultHttp3HeadersFrame(array.length));
+        int len = encode.readableBytes();
+        ctx.write(getDefaultHttp3HeadersFrame(len));
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
         ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
         log.info("invoke Time = {}", System.currentTimeMillis() - start);
