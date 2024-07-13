@@ -42,9 +42,11 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                 .sslContext(sslContext)
                 .maxIdleTimeout(500000, TimeUnit.MILLISECONDS)
                 .initialMaxData(10000000)
+                .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
-                .initialMaxStreamsBidirectional(100)
+                .initialMaxStreamsBidirectional(2000)  // 设置最大并发双向流数
+                .initialMaxStreamsUnidirectional(2000) // 设置最大并发单向流数
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {
                     @Override

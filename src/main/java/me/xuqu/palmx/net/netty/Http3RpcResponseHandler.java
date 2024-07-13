@@ -1,7 +1,6 @@
 package me.xuqu.palmx.net.netty;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3DataFrame;
 import io.netty.incubator.codec.http3.Http3HeadersFrame;
 import io.netty.incubator.codec.http3.Http3RequestStreamInboundHandler;
@@ -30,14 +29,14 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-        log.info("this is head " + ctx);
+        log.info("this is head {}", ctx);
         ReferenceCountUtil.release(frame);
     }
 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-        log.info("this is body " + ctx);
+        log.info("this is body {}", ctx);
         RpcResponse rpcResponse = MessageCodecHelper.decodeResponse(frame.content());
         // 从缓存中移除该序列号的 Promise
         Promise<Object> promise = map.remove(rpcResponse.getSequenceId());
@@ -49,14 +48,6 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
             }
         }
         ReferenceCountUtil.release(frame);
-    }
-
-    private static Http3HeadersFrame getDefaultHttp3HeadersFrame(int length) {
-        Http3HeadersFrame headersFrame = new DefaultHttp3HeadersFrame();
-        headersFrame.headers().status("200");
-        headersFrame.headers().add("server", "netty");
-        headersFrame.headers().addInt("content-length", length);
-        return headersFrame;
     }
 
     @Override

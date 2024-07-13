@@ -88,8 +88,11 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         return Http3.newQuicClientCodecBuilder()
                 .sslContext(context)
                 .maxIdleTimeout(500000, TimeUnit.MILLISECONDS)
-                .initialMaxData(1000000000)
+                .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
+                .initialMaxStreamDataBidirectionalRemote(1000000)
+                .initialMaxStreamsBidirectional(2000)  // 设置最大并发双向流数
+                .initialMaxStreamsUnidirectional(2000) // 设置最大并发单向流数
                 .build();
     }
 
