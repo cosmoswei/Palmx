@@ -29,14 +29,14 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-        log.info("this is head {}", ctx);
+//        log.info("this is head {}", ctx);
         ReferenceCountUtil.release(frame);
     }
 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-        log.info("this is body {}", ctx);
+//        log.info("this is body {}", ctx);
         RpcResponse rpcResponse = MessageCodecHelper.decodeResponse(frame.content());
         // 从缓存中移除该序列号的 Promise
         Promise<Object> promise = map.remove(rpcResponse.getSequenceId());

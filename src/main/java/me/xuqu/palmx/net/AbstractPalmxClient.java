@@ -10,9 +10,9 @@ public abstract class AbstractPalmxClient implements PalmxClient {
     public Object sendAndExpect(RpcInvocation rpcInvocation) {
         RpcMessage rpcMessage = new RpcMessage(SequenceIdGenerator.nextId(), rpcInvocation);
         rpcMessage.setMessageType(PalmxConstants.NETTY_RPC_INVOCATION_MESSAGE);
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         Object res = doSend(rpcMessage);
-        log.info("invoke Time = {}", System.currentTimeMillis() - start);
+//        log.info("invoke Time = {}", System.currentTimeMillis() - start);
         return res;
     }
 

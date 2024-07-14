@@ -10,10 +10,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
-import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.incubator.codec.quic.*;
 import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
@@ -27,7 +24,6 @@ import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -41,8 +37,6 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             .build();
 
     NioEventLoopGroup group = null;
-
-    private int connectMissCnt = 0;
 
     @Override
     protected Object doSend(RpcMessage rpcMessage) {
@@ -81,7 +75,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         }
     }
 
-    private static ChannelHandler getChannelHandler() {
+    private ChannelHandler getChannelHandler() {
         QuicSslContext context = QuicSslContextBuilder.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
@@ -96,12 +90,10 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 .build();
     }
 
-    private QuicStreamChannel getQuicStreamChannel(InetSocketAddress socketAddress) throws InterruptedException {
+    private QuicStreamChannel getQuicStreamChannel(InetSocketAddress socketAddress) {
         String socketAddressString = socketAddress.toString();
         QuicChannel quicChannel = connectionCache.getIfPresent(socketAddressString);
         if (quicChannel == null) {
-            connectMissCnt++;
-            log.info("connectMissCnt = {}", connectMissCnt);
             try {
                 if (this.group == null) {
                     group = new NioEventLoopGroup(PalmxConfig.ioThreads());
@@ -117,11 +109,18 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                         .remoteAddress(socketAddress)
                         .connect()
                         .get();
-            } catch (ExecutionException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             connectionCache.put(socketAddressString, quicChannel);
         }
-        return Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler()).sync().getNow();
+        QuicStreamChannel quicStreamChannel;
+        try {
+            quicStreamChannel = Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler()).sync().getNow();
+        } catch (Exception e) {
+            connectionCache.invalidate(socketAddressString);
+            return getQuicStreamChannel(socketAddress);
+        }
+        return quicStreamChannel;
     }
 }

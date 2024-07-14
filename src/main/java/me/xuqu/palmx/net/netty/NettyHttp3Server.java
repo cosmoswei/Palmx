@@ -38,7 +38,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
         }
         QuicSslContext sslContext = QuicSslContextBuilder.forServer(cert.key(), null, cert.cert())
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
-        ChannelHandler codec = Http3.newQuicServerCodecBuilder()
+        ChannelHandler channelHandler = Http3.newQuicServerCodecBuilder()
                 .sslContext(sslContext)
                 .maxIdleTimeout(500000, TimeUnit.MILLISECONDS)
                 .initialMaxData(10000000)
@@ -66,7 +66,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
             Bootstrap bs = new Bootstrap();
             Channel channel = bs.group(group)
                     .channel(NioDatagramChannel.class)
-                    .handler(codec)
+                    .handler(channelHandler)
                     .bind(new InetSocketAddress(port)).sync().channel();
             channel.closeFuture().sync();
         } catch (Exception e) {
