@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Import(PalmxServerFactoryBean.class)
+@Import({PalmxServerFactoryBean.class, PalmxBeanPostProcessor.class})
 public @interface EnablePalmx {
 }

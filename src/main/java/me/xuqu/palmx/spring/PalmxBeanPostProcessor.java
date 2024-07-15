@@ -31,7 +31,6 @@ public class PalmxBeanPostProcessor implements BeanPostProcessor, ApplicationCon
         if (aClass.isAnnotationPresent(PalmxService.class)) {
             String serviceName = aClass.getInterfaces()[0].getName();
             DefaultServiceProvider.getInstance().addService(serviceName, bean);
-
             // 获取单例池中的 PalmxServer 对象，然后获取当前服务的地址
             PalmxServer palmxServer = applicationContext.getBean(PalmxServer.class);
             serviceRegistry.register(serviceName, palmxServer.getAddress());
