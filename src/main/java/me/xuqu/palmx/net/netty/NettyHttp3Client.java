@@ -10,7 +10,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
-import io.netty.incubator.codec.quic.*;
+import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
+import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
@@ -62,16 +65,16 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             // 取出结果
             if (promise.isSuccess()) {
                 Object result = promise.getNow();
+                quicStreamChannel.closeFuture();
                 // log.debug("Send a packet[{}], get result = {}", rpcMessage, result);
                 return result;
             } else {
                 log.warn("Method invocation failed, with exception");
-                promise.cause().printStackTrace();
                 throw ((RpcInvocationException) promise.cause());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RpcInvocationException("invoke error msg = " + e.getMessage());
+            log.error("send error, msg = {}", e.getMessage());
+            throw new RpcInvocationException("send error, msg = " + e.getMessage());
         }
     }
 
@@ -86,7 +89,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
                 .initialMaxStreamsBidirectional(PalmxConfig.getInitialMaxStreamsBidirectional())  // 设置最大并发双向流数
-                .initialMaxStreamsUnidirectional(2000) // 设置最大并发单向流数
+                .initialMaxStreamsUnidirectional(200) // 设置最大并发单向流数
                 .build();
     }
 
@@ -98,12 +101,9 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         }
         QuicStreamChannel quicStreamChannel;
         try {
-            if (quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL) < 0) {
-                quicChannel = getNewQuicChannel(socketAddress);
-            }
             quicStreamChannel = Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler()).sync().getNow();
         } catch (Exception e) {
-//            e.printStackTrace();
+            log.error("get quic stream channel error, msg = {}", e.getMessage());
             connectionCache.invalidate(socketAddressString);
             return getQuicStreamChannel(socketAddress);
         }

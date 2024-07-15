@@ -21,7 +21,7 @@ public class PalmxConstants {
 
     public static final int DEFAULT_PALMX_SERVER_PORT = 8080;
     public static final int DEFAULT_PALMX_IO_THREADS = Runtime.getRuntime().availableProcessors();
-    public static final int DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL = 20000;
+    public static final int DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL = 200;
 
     public static final int NETTY_MESSAGE_HEADER_LENGTH = 16;
     public static final int NETTY_MESSAGE_LENGTH_FIELD_LENGTH = 4;
