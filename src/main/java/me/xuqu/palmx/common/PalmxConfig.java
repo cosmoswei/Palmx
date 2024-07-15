@@ -45,9 +45,14 @@ public class PalmxConfig {
         return property == null ? DEFAULT_PALMX_SERVER_PORT : Integer.parseInt(property);
     }
 
-    public static boolean getEnableQuic() {
-        String property = getProperty(PropertyKey.ENABLE_QUIC);
+    public static boolean getQuicEnable() {
+        String property = getProperty(PropertyKey.QUIC_ENABLE_);
         return "ture".equals(property) || "Ture".equals(property);
+    }
+
+    public static int getInitialMaxStreamsBidirectional() {
+        String property = getProperty(PropertyKey.QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL);
+        return property == null ? DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL : Integer.parseInt(property);
     }
 
     public static int ioThreads() {

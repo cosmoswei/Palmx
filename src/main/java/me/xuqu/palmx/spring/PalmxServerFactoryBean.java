@@ -12,7 +12,7 @@ public class PalmxServerFactoryBean implements FactoryBean<PalmxServer> {
     @Override
     public PalmxServer getObject() {
         PalmxServer server;
-        boolean enableQuic = PalmxConfig.getEnableQuic();
+        boolean enableQuic = PalmxConfig.getQuicEnable();
         if (!enableQuic) {
             server = new NettyServer();
         } else {

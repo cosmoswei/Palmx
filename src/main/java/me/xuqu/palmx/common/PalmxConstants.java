@@ -11,7 +11,9 @@ public class PalmxConstants {
         static final String PALMX_SERVER_PORT = PREFIX + ".server.port";
         static final String LOAD_BALANCE_TYPE = PREFIX + ".load-balancer";
         static final String IO_THREADS = PREFIX + ".io-threads";
-        static final String ENABLE_QUIC = PREFIX + ".enable-quic";
+        static final String QUIC_ENABLE_ = PREFIX + ".quic-enable";
+        static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";
+
     }
 
     public static final String DEFAULT_ZOOKEEPER_ADDRESS = "127.0.0.1:8121";
@@ -19,6 +21,7 @@ public class PalmxConstants {
 
     public static final int DEFAULT_PALMX_SERVER_PORT = 8080;
     public static final int DEFAULT_PALMX_IO_THREADS = Runtime.getRuntime().availableProcessors();
+    public static final int DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL = 20000;
 
     public static final int NETTY_MESSAGE_HEADER_LENGTH = 16;
     public static final int NETTY_MESSAGE_LENGTH_FIELD_LENGTH = 4;

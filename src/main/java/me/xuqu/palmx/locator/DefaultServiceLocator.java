@@ -25,7 +25,7 @@ public class DefaultServiceLocator implements ServiceLocator {
         ClassLoader classLoader = clazz.getClassLoader();
         if (CLIENT == null) {
             synchronized (DefaultServiceLocator.class) {
-                if (PalmxConfig.getEnableQuic()) {
+                if (PalmxConfig.getQuicEnable()) {
                     CLIENT = new NettyHttp3Client();
                 } else {
                     CLIENT = new NettyClient();

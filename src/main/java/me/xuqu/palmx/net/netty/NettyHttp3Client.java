@@ -85,7 +85,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
-                .initialMaxStreamsBidirectional(2000)  // 设置最大并发双向流数
+                .initialMaxStreamsBidirectional(PalmxConfig.getInitialMaxStreamsBidirectional())  // 设置最大并发双向流数
                 .initialMaxStreamsUnidirectional(2000) // 设置最大并发单向流数
                 .build();
     }
@@ -94,33 +94,44 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         String socketAddressString = socketAddress.toString();
         QuicChannel quicChannel = connectionCache.getIfPresent(socketAddressString);
         if (quicChannel == null) {
-            try {
-                if (this.group == null) {
-                    group = new NioEventLoopGroup(PalmxConfig.ioThreads());
-                }
-                ChannelHandler channelHandler = getChannelHandler();
-                Bootstrap bs = new Bootstrap();
-                Channel channel = bs.group(group)
-                        .channel(NioDatagramChannel.class)
-                        .handler(channelHandler)
-                        .bind(0).sync().channel();
-                quicChannel = QuicChannel.newBootstrap(channel)
-                        .handler(new Http3ClientConnectionHandler())
-                        .remoteAddress(socketAddress)
-                        .connect()
-                        .get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            connectionCache.put(socketAddressString, quicChannel);
+            quicChannel = getNewQuicChannel(socketAddress);
         }
         QuicStreamChannel quicStreamChannel;
         try {
+            if (quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL) < 0) {
+                quicChannel = getNewQuicChannel(socketAddress);
+            }
             quicStreamChannel = Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler()).sync().getNow();
         } catch (Exception e) {
+//            e.printStackTrace();
             connectionCache.invalidate(socketAddressString);
             return getQuicStreamChannel(socketAddress);
         }
         return quicStreamChannel;
+    }
+
+    private QuicChannel getNewQuicChannel(InetSocketAddress socketAddress) {
+        String socketAddressString = socketAddress.toString();
+        QuicChannel quicChannel;
+        try {
+            if (this.group == null) {
+                group = new NioEventLoopGroup(PalmxConfig.ioThreads());
+            }
+            ChannelHandler channelHandler = getChannelHandler();
+            Bootstrap bs = new Bootstrap();
+            Channel channel = bs.group(group)
+                    .channel(NioDatagramChannel.class)
+                    .handler(channelHandler)
+                    .bind(0).sync().channel();
+            quicChannel = QuicChannel.newBootstrap(channel)
+                    .handler(new Http3ClientConnectionHandler())
+                    .remoteAddress(socketAddress)
+                    .connect()
+                    .get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        connectionCache.put(socketAddressString, quicChannel);
+        return quicChannel;
     }
 }
