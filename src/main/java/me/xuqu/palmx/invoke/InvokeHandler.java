@@ -1,17 +1,13 @@
 package me.xuqu.palmx.invoke;
 
-import io.netty.buffer.ByteBuf;
 import me.xuqu.palmx.common.PalmxConstants;
 import me.xuqu.palmx.net.RpcInvocation;
-import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 import me.xuqu.palmx.provider.DefaultServiceProvider;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static me.xuqu.palmx.serialize.Serialization.deserialize;
-import static me.xuqu.palmx.serialize.Serialization.serialize;
 
 public class InvokeHandler {
 
@@ -46,15 +42,5 @@ public class InvokeHandler {
             rpcResponse.setMessage(e.getCause().getMessage());
         }
         return rpcResponse;
-    }
-
-
-    public static Object byte2Obj(ByteBuf var) {
-        byte x = var.readByte();
-        return deserialize(x, RpcInvocation.class, var.array());
-    }
-
-    public static byte[] obj2Byte(RpcMessage rpcMessage) {
-        return serialize(rpcMessage.getSerializationType(), rpcMessage.getData());
     }
 }
