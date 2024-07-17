@@ -1,6 +1,6 @@
-package me.xuqu.palmx.loadbalancer.impl;
+package me.xuqu.palmx.loadbalance.impl;
 
-import me.xuqu.palmx.loadbalancer.AbstractLoadBalancer;
+import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RoundRobinLoadBalancer extends AbstractLoadBalancer {
+public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     private final Map<String, AtomicInteger> positions = new ConcurrentHashMap<>();
 

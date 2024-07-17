@@ -1,9 +1,9 @@
-package me.xuqu.palmx.loadbalancer;
+package me.xuqu.palmx.loadbalance;
 
 import com.google.common.collect.Lists;
-import me.xuqu.palmx.loadbalancer.impl.ConsistentHashLoadBalancer;
-import me.xuqu.palmx.loadbalancer.impl.RandomLoadBalancer;
-import me.xuqu.palmx.loadbalancer.impl.RoundRobinLoadBalancer;
+import me.xuqu.palmx.loadbalance.impl.ConsistentHashLoadBalance;
+import me.xuqu.palmx.loadbalance.impl.RandomLoadBalance;
+import me.xuqu.palmx.loadbalance.impl.RoundRobinLoadBalance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LoadBalancerTests {
+public class LoadBalanceTests {
 
     private static Map<String, List<InetSocketAddress>> serviceMap;
-    private static LoadBalancer randomLoadBalancer;
-    private static LoadBalancer roundRobinLoadBalancer;
-    private static LoadBalancer consistentHasLoadBalancer;
+    private static LoadBalance randomLoadBalance;
+    private static LoadBalance roundRobinLoadBalance;
+    private static LoadBalance consistentHasLoadBalance;
 
 
     @BeforeAll
@@ -38,30 +38,30 @@ public class LoadBalancerTests {
                 new InetSocketAddress("20.10.10.12", 9999)
         ));
 
-        randomLoadBalancer = new RandomLoadBalancer();
-        roundRobinLoadBalancer = new RoundRobinLoadBalancer();
-        consistentHasLoadBalancer = new ConsistentHashLoadBalancer();
+        randomLoadBalance = new RandomLoadBalance();
+        roundRobinLoadBalance = new RoundRobinLoadBalance();
+        consistentHasLoadBalance = new ConsistentHashLoadBalance();
     }
 
     @Test
     public void consistentHashLoadBalance() {
         for (int i = 0; i < 10; i++) {
-            consistentHasLoadBalancer.choose(serviceMap.get("service1"), "service1");
+            consistentHasLoadBalance.choose(serviceMap.get("service1"), "service1");
         }
     }
 
     @Test
     public void randomLoadBalance() {
         for (int i = 0; i < 10; i++) {
-            randomLoadBalancer.choose(serviceMap.get("service1"), "service1");
+            randomLoadBalance.choose(serviceMap.get("service1"), "service1");
         }
     }
 
     @Test
     public void roundRobinBalance() {
         for (int i = 0; i < 6; i++) {
-            roundRobinLoadBalancer.choose(serviceMap.get("service1"), "service1");
-            roundRobinLoadBalancer.choose(serviceMap.get("service2"), "service2");
+            roundRobinLoadBalance.choose(serviceMap.get("service1"), "service1");
+            roundRobinLoadBalance.choose(serviceMap.get("service2"), "service2");
         }
     }
 }

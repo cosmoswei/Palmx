@@ -1,6 +1,6 @@
-package me.xuqu.palmx.loadbalancer.impl;
+package me.xuqu.palmx.loadbalance.impl;
 
-import me.xuqu.palmx.loadbalancer.AbstractLoadBalancer;
+import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
+public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
     private final ConcurrentHashMap<String, ConsistentHashSelector> selectors = new ConcurrentHashMap<>();
 

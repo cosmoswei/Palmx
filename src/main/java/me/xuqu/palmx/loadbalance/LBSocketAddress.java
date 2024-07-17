@@ -1,4 +1,4 @@
-package me.xuqu.palmx.loadbalancer;
+package me.xuqu.palmx.loadbalance;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

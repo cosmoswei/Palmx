@@ -1,12 +1,12 @@
-package me.xuqu.palmx.loadbalancer.impl;
+package me.xuqu.palmx.loadbalance.impl;
 
-import me.xuqu.palmx.loadbalancer.AbstractLoadBalancer;
+import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomLoadBalancer extends AbstractLoadBalancer {
+public class RandomLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName) {

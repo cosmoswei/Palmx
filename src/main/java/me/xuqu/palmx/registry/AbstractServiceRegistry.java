@@ -27,7 +27,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
     @Override
     public List<InetSocketAddress> lookup(String serviceName) {
-
         List<InetSocketAddress> ifPresent = registryCache.getIfPresent(serviceName);
         if (!CollectionUtils.isEmpty(ifPresent)) {
             return ifPresent;
@@ -37,7 +36,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
                 String[] strings = s.split(":");
                 return new InetSocketAddress(strings[0], Integer.parseInt(strings[1]));
             }).collect(Collectors.toList());
-
             if (inetSocketAddresses.isEmpty()) {
                 throw new ServiceNotFoundException(serviceName);
             }
