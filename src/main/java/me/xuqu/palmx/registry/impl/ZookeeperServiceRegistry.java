@@ -1,6 +1,7 @@
 package me.xuqu.palmx.registry.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.registry.AbstractServiceRegistry;
 import me.xuqu.palmx.util.CuratorUtils;
 
@@ -17,7 +18,7 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
-    public void unregister(String serviceName, InetSocketAddress inetSocketAddress) {
+    public void unregister(String serviceName, PalmxSocketAddress inetSocketAddress) {
 
     }
 

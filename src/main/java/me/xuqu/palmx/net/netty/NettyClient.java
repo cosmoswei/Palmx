@@ -13,6 +13,7 @@ import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
 import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
@@ -35,8 +36,7 @@ public class NettyClient extends AbstractPalmxClient {
         String serviceName = ((RpcInvocation) rpcMessage.getData()).getInterfaceName();
 
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
-        List<InetSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
-
+        List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
         InetSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
 

@@ -1,8 +1,8 @@
 package me.xuqu.palmx.loadbalance.impl;
 
 import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class AdaptiveLoadBalance extends AbstractLoadBalance {
     @Override
-    protected InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName) {
+    protected PalmxSocketAddress doChoose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
         return null;
     }
 }

@@ -3,6 +3,7 @@ package me.xuqu.palmx.registry;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import me.xuqu.palmx.exception.ServiceNotFoundException;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import org.springframework.util.CollectionUtils;
 
 import java.net.InetSocketAddress;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
-    Cache<String, List<InetSocketAddress>> registryCache = Caffeine.newBuilder()
+    Cache<String, List<PalmxSocketAddress>> registryCache = Caffeine.newBuilder()
             //过期时间
             .expireAfterWrite(1, TimeUnit.MINUTES)
             //最大容量
@@ -20,21 +21,21 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
             .build();
 
     @Override
-    public void register(String serviceName, InetSocketAddress inetSocketAddress) {
+    public void register(String serviceName, PalmxSocketAddress inetSocketAddress) {
         String serviceAddress = String.format("%s:%d", inetSocketAddress.getHostString(), inetSocketAddress.getPort());
         doRegister(serviceName, serviceAddress);
     }
 
     @Override
-    public List<InetSocketAddress> lookup(String serviceName) {
-        List<InetSocketAddress> ifPresent = registryCache.getIfPresent(serviceName);
+    public List<PalmxSocketAddress> lookup(String serviceName) {
+        List<PalmxSocketAddress> ifPresent = registryCache.getIfPresent(serviceName);
         if (!CollectionUtils.isEmpty(ifPresent)) {
             return ifPresent;
         } else {
             List<String> serviceAddresses = doLookup(serviceName);
-            List<InetSocketAddress> inetSocketAddresses = serviceAddresses.stream().map(s -> {
+            List<PalmxSocketAddress> inetSocketAddresses = serviceAddresses.stream().map(s -> {
                 String[] strings = s.split(":");
-                return new InetSocketAddress(strings[0], Integer.parseInt(strings[1]));
+                return new PalmxSocketAddress(strings[0], Integer.parseInt(strings[1]));
             }).collect(Collectors.toList());
             if (inetSocketAddresses.isEmpty()) {
                 throw new ServiceNotFoundException(serviceName);

@@ -2,7 +2,6 @@ package me.xuqu.palmx.loadbalance;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,27 +9,26 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public abstract class AbstractLoadBalance implements LoadBalance {
 
-
-    protected static final Map<String, List<LBSocketAddress>> serviceNodes = new ConcurrentHashMap<>();
+    protected static final Map<String, List<PalmxSocketAddress>> serviceNodes = new ConcurrentHashMap<>();
 
     private boolean needRefresh;
 
-    public synchronized void refreshServiceNodes(List<LBSocketAddress> lbSocketAddresses,
+    public synchronized void refreshServiceNodes(List<PalmxSocketAddress> palmxSocketAddresses,
                                                  String service) {
         if (!needRefresh) {
             return;
         }
 
-        List<LBSocketAddress> fleshSocketAddress = serviceNodes.get(service);
+        List<PalmxSocketAddress> fleshSocketAddress = serviceNodes.get(service);
         if (fleshSocketAddress == null) {
-            serviceNodes.put(service, lbSocketAddresses);
+            serviceNodes.put(service, palmxSocketAddresses);
             return;
         }
         // 删除过期的节点
-        fleshSocketAddress.removeIf(e -> !lbSocketAddresses.contains(e));
+        fleshSocketAddress.removeIf(e -> !palmxSocketAddresses.contains(e));
         // 新增新节点
-        lbSocketAddresses.removeIf(fleshSocketAddress::contains);
-        fleshSocketAddress.addAll(lbSocketAddresses);
+        palmxSocketAddresses.removeIf(fleshSocketAddress::contains);
+        fleshSocketAddress.addAll(palmxSocketAddresses);
         serviceNodes.put(service, fleshSocketAddress);
     }
 
@@ -39,20 +37,18 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     }
 
     @Override
-    public InetSocketAddress choose(List<InetSocketAddress> socketAddressList, String serviceName) {
+    public PalmxSocketAddress choose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
         if (socketAddressList == null || socketAddressList.isEmpty()) {
             log.warn("No servers available for service: {}", serviceName);
             return null;
         }
+        if (socketAddressList.size() == 1)
+            return (socketAddressList.get(0).isAvailable()) ? socketAddressList.get(0) : null;
 
-        if (socketAddressList.size() == 1) {
-            return socketAddressList.get(0);
-        }
-
-        InetSocketAddress inetSocketAddress = doChoose(socketAddressList, serviceName);
-        log.debug("Choose a server[{}] for service[name = {}] with services = {}", inetSocketAddress, serviceName, socketAddressList);
-        return inetSocketAddress;
+        PalmxSocketAddress socketAddress = doChoose(socketAddressList, serviceName);
+        log.debug("Choose a server[{}] for service[name = {}] with services = {}", socketAddress, serviceName, socketAddressList);
+        return socketAddress;
     }
 
-    protected abstract InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName);
+    protected abstract PalmxSocketAddress doChoose(List<PalmxSocketAddress> socketAddressList, String serviceName);
 }

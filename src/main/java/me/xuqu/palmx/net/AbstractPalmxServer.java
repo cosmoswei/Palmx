@@ -2,6 +2,7 @@ package me.xuqu.palmx.net;
 
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -10,7 +11,7 @@ import java.net.UnknownHostException;
 @Slf4j
 public abstract class AbstractPalmxServer implements PalmxServer {
 
-    protected InetSocketAddress inetSocketAddress;
+    protected PalmxSocketAddress inetSocketAddress;
     protected String host = "127.0.0.1";
     protected int port = PalmxConfig.getPalmxServerPort();
 
@@ -29,7 +30,7 @@ public abstract class AbstractPalmxServer implements PalmxServer {
 
     @Override
     public void start() {
-        inetSocketAddress = new InetSocketAddress(host, port);
+        inetSocketAddress = new PalmxSocketAddress(host, port);
         doStart();
     }
 
@@ -45,7 +46,7 @@ public abstract class AbstractPalmxServer implements PalmxServer {
     }
 
     @Override
-    public InetSocketAddress getAddress() {
+    public PalmxSocketAddress getAddress() {
         return inetSocketAddress;
     }
 

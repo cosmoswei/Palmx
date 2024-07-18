@@ -1,5 +1,7 @@
 package me.xuqu.palmx.registry;
 
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -8,10 +10,10 @@ import java.util.List;
  */
 public interface ServiceRegistry {
 
-    void register(String serviceName, InetSocketAddress inetSocketAddress);
+    void register(String serviceName, PalmxSocketAddress inetSocketAddress);
 
-    void unregister(String serviceName, InetSocketAddress inetSocketAddress);
+    void unregister(String serviceName, PalmxSocketAddress inetSocketAddress);
 
-    List<InetSocketAddress> lookup(String serviceName);
+    List<PalmxSocketAddress> lookup(String serviceName);
 
 }

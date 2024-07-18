@@ -1,6 +1,7 @@
 package me.xuqu.palmx.loadbalance.impl;
 
 import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +18,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     private final ConcurrentHashMap<String, ConsistentHashSelector> selectors = new ConcurrentHashMap<>();
 
     @Override
-    protected InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName) {
+    protected PalmxSocketAddress doChoose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
         List<String> serviceAddresses = socketAddressList.stream().map(InetSocketAddress::toString).collect(Collectors.toList());
 
         int identityHashCode = System.identityHashCode(socketAddressList);
@@ -30,7 +31,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         String[] strings = selector.select(serviceName).split(":");
-        return new InetSocketAddress(strings[0].substring(1), Integer.parseInt(strings[1]));
+        return new PalmxSocketAddress(strings[0].substring(1), Integer.parseInt(strings[1]));
     }
 
     static class ConsistentHashSelector {

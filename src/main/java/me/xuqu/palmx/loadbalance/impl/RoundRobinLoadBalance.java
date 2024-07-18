@@ -1,8 +1,8 @@
 package me.xuqu.palmx.loadbalance.impl;
 
 import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
+import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,7 +14,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     private final Map<String, AtomicInteger> positions = new ConcurrentHashMap<>();
 
     @Override
-    protected InetSocketAddress doChoose(List<InetSocketAddress> socketAddressList, String serviceName) {
+    protected PalmxSocketAddress doChoose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
         if (!positions.containsKey(serviceName)) {
             positions.put(serviceName, new AtomicInteger((new Random()).nextInt(1000)));
         }
