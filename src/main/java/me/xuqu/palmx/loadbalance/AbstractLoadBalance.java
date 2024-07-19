@@ -32,7 +32,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         serviceNodes.put(service, fleshSocketAddress);
     }
 
-    public void notifyRefresh() {
+    public synchronized void notifyRefresh() {
         needRefresh = true;
     }
 
