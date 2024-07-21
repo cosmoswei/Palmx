@@ -2,9 +2,9 @@
 package me.xuqu.palmx.common;
 
 public enum FlowControlType {
-    COUNTER_FLOW_CONTROL,
-    SLIDING_WINDOW_FLOW_CONTROL,
-    LEAK_BUCKET_FLOW_CONTROL,
-    TOKEN_BUCKET_FLOW_CONTROL,
-    ADAPTIVE_FLOW_CONTROL
+    COUNTER,
+    SLIDING_WINDOW,
+    LEAK_BUCKET,
+    TOKEN_BUCKET,
+    ADAPTIVE
 }

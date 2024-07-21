@@ -1,4 +1,4 @@
-package me.xuqu.palmx.Metric;
+package me.xuqu.palmx.metric;
 
 public class MetricMetadata {
 }

@@ -10,6 +10,7 @@ public class PalmxConstants {
         static final String ZOOKEEPER_ROOT_NODE = PREFIX + ".zookeeper.root-node";
         static final String PALMX_SERVER_PORT = PREFIX + ".server.port";
         static final String LOAD_BALANCE_TYPE = PREFIX + ".load-balancer";
+        static final String FLOW_CONTROL_TYPE = PREFIX + ".flow-control";
         static final String IO_THREADS = PREFIX + ".io-threads";
         static final String QUIC_ENABLE_ = PREFIX + ".quic-enable";
         static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";

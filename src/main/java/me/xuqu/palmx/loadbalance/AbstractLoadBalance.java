@@ -13,6 +13,11 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     private boolean needRefresh;
 
+    /**
+     * 负载均衡器维护节点的状态
+     * 当节点下线时，从状态列表中移除
+     * 当节点上线时，新增到状态列表
+     */
     public synchronized void refreshServiceNodes(List<PalmxSocketAddress> palmxSocketAddresses,
                                                  String service) {
         if (!needRefresh) {

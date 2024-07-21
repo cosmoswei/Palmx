@@ -1,10 +1,8 @@
 package me.xuqu.palmx.loadbalance.impl;
 
-
 import me.xuqu.palmx.loadbalance.AbstractLoadBalance;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,12 +10,6 @@ import java.util.List;
  * <a href="https://www.cnblogs.com/dennyLee2025/p/16128477.html">copyright from</a>
  */
 public class WeightRoundRobinLoadBalance extends AbstractLoadBalance {
-
-    /**
-     * 负载均衡器维护节点的状态
-     * 当节点下线时，从状态列表中移除
-     * 当节点上线时，新增到状态列表
-     */
 
     @Override
     protected PalmxSocketAddress doChoose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
