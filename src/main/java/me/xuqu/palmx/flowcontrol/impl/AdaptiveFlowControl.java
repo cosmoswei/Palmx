@@ -6,7 +6,7 @@ import me.xuqu.palmx.flowcontrol.FlowControlMetadata;
 public class AdaptiveFlowControl extends AbstractFlowControl {
 
     @Override
-    public boolean doControl(FlowControlMetadata limiterMataData) {
+    public boolean doControl(FlowControlMetadata flowControlMetadata) {
         return false;
     }
 }

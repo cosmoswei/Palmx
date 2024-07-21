@@ -6,9 +6,9 @@ package me.xuqu.palmx.flowcontrol;
 public abstract class AbstractFlowControl implements FlowControl {
 
     @Override
-    public boolean control(FlowControlMetadata limiterMataData) {
+    public boolean control(FlowControlMetadata flowControlMetadata) {
         return false;
     }
 
-    protected abstract boolean doControl(FlowControlMetadata limiterMataData) ;
+    protected abstract boolean doControl(FlowControlMetadata flowControlMetadata) ;
 }
