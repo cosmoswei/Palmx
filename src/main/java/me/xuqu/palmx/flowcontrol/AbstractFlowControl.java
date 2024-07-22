@@ -5,10 +5,13 @@ package me.xuqu.palmx.flowcontrol;
  */
 public abstract class AbstractFlowControl implements FlowControl {
 
+    protected int qps;
+
     @Override
-    public boolean control(FlowControlMetadata flowControlMetadata) {
-        return false;
+    public boolean control(FlowControlReq flowControlReq) {
+        return doControl(flowControlReq);
     }
 
-    protected abstract boolean doControl(FlowControlMetadata flowControlMetadata) ;
+    protected abstract boolean doControl(FlowControlReq flowControlReq);
+
 }

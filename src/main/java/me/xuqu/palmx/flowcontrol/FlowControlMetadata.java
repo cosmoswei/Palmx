@@ -1,32 +1,32 @@
 package me.xuqu.palmx.flowcontrol;
 
 import lombok.Data;
+import me.xuqu.palmx.common.FlowControlType;
 
 /**
  * 用于封装不同限流方案中的参数
- * 如果其他限流方案需要其他参数则在这里更新并在aop中添加到该bean
  */
 @Data
 public class FlowControlMetadata {
 
     /**
-     * 用于不同具体限流实现
+     * 流控键
      */
-    public final String key;
+    public String flowControlKey;
 
     /**
-     * 限制次数
+     * 流控类型
      */
-    public final int limit;
+    public FlowControlType flowControlType;
 
     /**
-     * 限制时间
+     * 限制次数（QPS）
      */
-    public final int interval;
+    public int limitCount;
 
-    public FlowControlMetadata(String key, int limit, int interval) {
-        this.key = key;
-        this.limit = limit;
-        this.interval = interval;
+    public FlowControlMetadata(String flowControlKey, FlowControlType flowControlType, int limitCount) {
+        this.flowControlKey = flowControlKey;
+        this.flowControlType = flowControlType;
+        this.limitCount = limitCount;
     }
 }

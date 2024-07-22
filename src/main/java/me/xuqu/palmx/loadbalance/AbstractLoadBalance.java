@@ -11,7 +11,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     protected static final Map<String, List<PalmxSocketAddress>> serviceNodes = new ConcurrentHashMap<>();
 
-    private boolean needRefresh;
+    private final Map<String, Boolean> needRefresh = new ConcurrentHashMap<>();
 
     /**
      * 负载均衡器维护节点的状态
@@ -20,10 +20,10 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      */
     public synchronized void refreshServiceNodes(List<PalmxSocketAddress> palmxSocketAddresses,
                                                  String service) {
-        if (!needRefresh) {
+        Boolean absent = needRefresh.putIfAbsent(service, false);
+        if (Boolean.TRUE.equals(absent)) {
             return;
         }
-
         List<PalmxSocketAddress> fleshSocketAddress = serviceNodes.get(service);
         if (fleshSocketAddress == null) {
             serviceNodes.put(service, palmxSocketAddresses);
@@ -37,8 +37,8 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         serviceNodes.put(service, fleshSocketAddress);
     }
 
-    public synchronized void notifyRefresh() {
-        needRefresh = true;
+    public synchronized void notifyRefresh(String serviceName) {
+        needRefresh.put(serviceName, true);
     }
 
     @Override

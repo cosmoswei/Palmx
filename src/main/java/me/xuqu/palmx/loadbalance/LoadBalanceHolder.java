@@ -34,4 +34,8 @@ public class LoadBalanceHolder {
         }
         return loadBalance;
     }
+
+    public static synchronized void notifyRefresh(String serviceName) {
+        loadBalance.notifyRefresh(serviceName);
+    }
 }

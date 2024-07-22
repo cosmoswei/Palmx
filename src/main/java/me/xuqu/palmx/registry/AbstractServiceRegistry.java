@@ -4,14 +4,18 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import me.xuqu.palmx.exception.ServiceNotFoundException;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.CollectionUtils;
 
-import java.net.InetSocketAddress;
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     Cache<String, List<PalmxSocketAddress>> registryCache = Caffeine.newBuilder()
             //过期时间
@@ -24,6 +28,8 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     public void register(String serviceName, PalmxSocketAddress inetSocketAddress) {
         String serviceAddress = String.format("%s:%d", inetSocketAddress.getHostString(), inetSocketAddress.getPort());
         doRegister(serviceName, serviceAddress);
+        //todo
+//        applicationContext.publishEvent(new RegisterSuccessEvent(serviceName));
     }
 
     @Override

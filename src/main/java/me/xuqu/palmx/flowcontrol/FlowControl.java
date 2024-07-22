@@ -6,11 +6,9 @@ package me.xuqu.palmx.flowcontrol;
 public interface FlowControl {
 
     /**
-     * 检查是否达到限制,子类必须强制实现该接口
-     *
-     * @param limiterMataData
-     * @return
+     * 检查是否达到限制
+     * true = 被限制；false = 没被限制
      */
-    boolean control(FlowControlMetadata limiterMataData);
+    boolean control(FlowControlReq flowControlReq);
 
 }

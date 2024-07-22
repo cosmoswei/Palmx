@@ -1,5 +1,7 @@
 package me.xuqu.palmx.spring;
 
+import me.xuqu.palmx.flowcontrol.FlowControlHolder;
+import me.xuqu.palmx.flowcontrol.FlowControlMetadata;
 import me.xuqu.palmx.locator.DefaultServiceLocator;
 import me.xuqu.palmx.locator.ServiceLocator;
 import me.xuqu.palmx.net.PalmxServer;
@@ -29,11 +31,15 @@ public class PalmxBeanPostProcessor implements BeanPostProcessor, ApplicationCon
         Class<?> aClass = bean.getClass();
         // 若该类被 @PalmxService 注解所标识，则将对象加入到容器并且往注册中心注册该服务
         if (aClass.isAnnotationPresent(PalmxService.class)) {
+            PalmxService annotation = aClass.getAnnotation(PalmxService.class);
             String serviceName = aClass.getInterfaces()[0].getName();
             DefaultServiceProvider.getInstance().addService(serviceName, bean);
             // 获取单例池中的 PalmxServer 对象，然后获取当前服务的地址
             PalmxServer palmxServer = applicationContext.getBean(PalmxServer.class);
             serviceRegistry.register(serviceName, palmxServer.getAddress());
+            FlowControlHolder.initFlowControl(new FlowControlMetadata(serviceName,
+                    annotation.flowControlLimitType(),
+                    annotation.flowControlLimitCount()));
         }
         return bean;
     }
