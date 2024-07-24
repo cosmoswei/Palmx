@@ -1,5 +1,8 @@
 package me.xuqu.palmx.metric;
 
+import lombok.Data;
+
+@Data
 public class MetricMetadata {
 
     /**
