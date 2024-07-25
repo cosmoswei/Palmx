@@ -8,39 +8,33 @@ public class MetricMetadata {
     /**
      * CPU 负载 %
      */
-    private String cpuLoad;
-
+    private double cpuLoad;
     /**
      * CPU使用率 %
      */
-    private String cpuUsage;
-
+    private double cpuUsage;
     /**
      * 内存使用率 %
      */
-    private String memUsage;
-
+    private double memUsage;
     /**
      * 磁盘负载 %
      */
-    private String diskLoad;
-
+    private double diskLoad;
     /**
      * 网络延迟 ms
      */
-    private String latency;
-
+    private double latency;
     /**
      * 带宽使用率 %
      */
-    private String bandwidthUtilization;
-
+    private double bandwidthUtilization;
     /**
      * 并发连接数
      */
-    private String concurrentConnections;
+    private double concurrentConnections;
     /**
      * 丢包率 %
      */
-    private String packetLossRate;
+    private double packetLossRate;
 }
