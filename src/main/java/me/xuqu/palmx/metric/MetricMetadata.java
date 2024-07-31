@@ -22,6 +22,10 @@ public class MetricMetadata {
      */
     private double diskLoad;
     /**
+     * 磁盘IO负载 %
+     */
+    private double diskIoLoad;
+    /**
      * 网络延迟 ms
      */
     private double latency;
