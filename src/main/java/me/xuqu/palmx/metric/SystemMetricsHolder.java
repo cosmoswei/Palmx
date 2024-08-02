@@ -125,6 +125,7 @@ public class SystemMetricsHolder {
         return stringSystemMetricsMap.get(ipAddress);
     }
 
+    // 还是按服务来吧，这样的
     public void loadSystemMetrics(String serverName) {
 
         // 获取IP列表
@@ -146,5 +147,17 @@ public class SystemMetricsHolder {
 
     private SystemMetrics getSystemMetricsByIp(String ipAddress) {
         return null;
+    }
+
+    private void loadBalance(){
+        // 先去获取服务列表
+
+        // 做一次P2C？
+
+        // 获取列表的机器配置、性能指标，没有的话去远程获取
+
+        // 根据规则获取自适应配置
+
+        // 根据自适应配置做负载均衡
     }
 }
