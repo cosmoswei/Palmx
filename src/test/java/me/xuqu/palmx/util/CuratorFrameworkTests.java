@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CuratorFrameworkTests {
 
-    private static final String testServiceName = "me.xuqu.FooService";
+    private static final String testServiceName = "me.wei.gogogogogo";
     private static final String testServiceAddress = "192.168.12.13:8080";
 
     @Test
