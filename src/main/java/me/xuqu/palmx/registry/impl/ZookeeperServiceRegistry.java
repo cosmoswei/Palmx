@@ -5,7 +5,6 @@ import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.registry.AbstractServiceRegistry;
 import me.xuqu.palmx.util.CuratorUtils;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 @Slf4j

@@ -17,11 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MetricsHolder {
 
-    Map<String, Metrics> stringMetricsMap = new ConcurrentHashMap<>();
+    private static final Map<String, Metrics> stringMetricsMap = new ConcurrentHashMap<>();
 
     private static MeterRegistry registry;
 
-    public Metrics getMetrics0() {
+    public static Metrics getMetrics0() {
         if (registry == null) {
             initMeterRegistry();
         }
@@ -33,7 +33,7 @@ public class MetricsHolder {
         return metrics;
     }
 
-    private void initMeterRegistry() {
+    private static void initMeterRegistry() {
         registry = MetricRegistryProvider.getRegistry();
         // Bind system metrics
         new ProcessorMetrics().bindTo(registry);
@@ -79,7 +79,7 @@ public class MetricsHolder {
         return null;
     }
 
-    private Metrics getLocaleMetrics() {
+    public static Metrics getLocaleMetrics() {
         return getMetrics0();
     }
 }

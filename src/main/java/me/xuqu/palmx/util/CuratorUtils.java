@@ -3,6 +3,7 @@ package me.xuqu.palmx.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
+import me.xuqu.palmx.qos.QoSHandler;
 import me.xuqu.palmx.registry.RegistryDTO;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -11,7 +12,9 @@ import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -61,37 +64,19 @@ public class CuratorUtils {
                 log.warn("Node exists for {}", nodePath);
                 return;
             }
-            // 创建节点
-            getClient().create()
-                    .creatingParentsIfNeeded()
-                    .withMode(createMode)
-                    .forPath(nodePath);
-            log.debug("Create node[{}], path = {} success", createMode, nodePath);
-        } catch (Exception e) {
-            log.error("Create node[{}], path = {} failed {}", createMode, nodePath, e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
-    public void createNode(String serviceName,
-                           String serviceAddress,
-                           short qoSLevel,
-                           CreateMode createMode) {
-        // 节点的绝对路径，比如 /palmx/me.xuqu.service.FooService/192.168.13.13:8080
-        String nodePath = buildNodePath(serviceName, serviceAddress);
-        try {
-            // 若当前要创建的节点已经存在了则直接返回
-            if (existsNode(serviceName, serviceAddress)) {
-                log.warn("Node exists for {}", nodePath);
-                return;
-            }
+            // 构建注册节点对象
             int serializationType = PalmxConfig.getSerializationType().ordinal();
             RegistryDTO registryDTO = new RegistryDTO();
             registryDTO.setProtocol("http3");
             registryDTO.setHost(serviceAddress);
             registryDTO.setPort(8080);
             registryDTO.setServiceName(serviceName);
-            registryDTO.setQoSLevel(qoSLevel);
+            // 获取本地的数据指标对象
+            int localQoSLevel = QoSHandler.getLocalQoSLevel();
+            registryDTO.setQoSLevel(localQoSLevel);
+            registryDTO.setTmRegistry(new Date());
+            registryDTO.setTmRefresh(new Date());
             byte[] registryDTOByte = serialize((byte) serializationType, registryDTO);
             // 创建节点
             getClient().create()
@@ -103,6 +88,15 @@ public class CuratorUtils {
             log.error("Create node[{}], path = {} failed {}", createMode, nodePath, e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void updateZNode(String path, byte[] dataBytes) throws Exception {
+        if (getClient().checkExists().forPath(path) != null) {
+            getClient().setData().forPath(path, dataBytes);
+        } else {
+            getClient().create().creatingParentsIfNeeded().forPath(path, dataBytes);
+        }
+        System.out.println("Updated node " + path + " with data: " + Arrays.toString(dataBytes));
     }
 
     /**
@@ -171,7 +165,7 @@ public class CuratorUtils {
      *
      * @return 单例对象（不严谨）
      */
-    public CuratorFramework getClient() {
+    public static CuratorFramework getClient() {
 
         if (curatorFramework == null || curatorFramework.getState() == CuratorFrameworkState.STOPPED) {
             // 最多尝试三次

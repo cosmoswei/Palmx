@@ -3,9 +3,9 @@ package me.xuqu.palmx.net;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
+import me.xuqu.palmx.registry.ZookeeperUpdater;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 @Slf4j
@@ -32,6 +32,8 @@ public abstract class AbstractPalmxServer implements PalmxServer {
     public void start() {
         inetSocketAddress = new PalmxSocketAddress(host, port);
         doStart();
+        // 启动更新ZK线程
+        ZookeeperUpdater.startUpdating();
     }
 
     @Override
@@ -51,5 +53,6 @@ public abstract class AbstractPalmxServer implements PalmxServer {
     }
 
     protected abstract void doStart();
+
     protected abstract void doShutdown();
 }

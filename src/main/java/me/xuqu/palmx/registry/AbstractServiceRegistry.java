@@ -30,6 +30,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         doRegister(serviceName, serviceAddress);
         //todo
 //        applicationContext.publishEvent(new RegisterSuccessEvent(serviceName));
+        services.add(serviceName);
     }
 
     @Override
