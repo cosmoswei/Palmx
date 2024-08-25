@@ -48,7 +48,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
-        PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
+        InetSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
         try {
             QuicStreamChannel quicStreamChannel = getQuicStreamChannel(socketAddress);
             Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();
@@ -95,8 +95,8 @@ public class NettyHttp3Client extends AbstractPalmxClient {
     }
 
     private QuicStreamChannel getQuicStreamChannel(InetSocketAddress socketAddress) {
-        String socketAddressString = socketAddress.toString();
-        QuicChannel quicChannel = connectionCache.getIfPresent(socketAddressString);
+        String hostname = socketAddress.getHostString();
+        QuicChannel quicChannel = connectionCache.getIfPresent(hostname);
         if (quicChannel == null) {
             quicChannel = getNewQuicChannel(socketAddress);
         }
@@ -105,14 +105,14 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             quicStreamChannel = Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler()).sync().getNow();
         } catch (Exception e) {
             log.error("get quic stream channel error, msg = {}", e.getMessage());
-            connectionCache.invalidate(socketAddressString);
+            connectionCache.invalidate(hostname);
             return getQuicStreamChannel(socketAddress);
         }
         return quicStreamChannel;
     }
 
     private QuicChannel getNewQuicChannel(InetSocketAddress socketAddress) {
-        String socketAddressString = socketAddress.toString();
+        String hostname = socketAddress.getHostString();
         QuicChannel quicChannel;
         try {
             if (this.group == null) {
@@ -132,7 +132,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        connectionCache.put(socketAddressString, quicChannel);
+        connectionCache.put(hostname, quicChannel);
         return quicChannel;
     }
 }

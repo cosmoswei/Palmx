@@ -33,8 +33,7 @@ public abstract class AbstractPalmxServer implements PalmxServer {
         inetSocketAddress = new PalmxSocketAddress(host, port);
         doStart();
         // 启动更新ZK线程
-        ZookeeperUpdater.startUpdating();
-        log.info("server start success");
+
     }
 
     @Override

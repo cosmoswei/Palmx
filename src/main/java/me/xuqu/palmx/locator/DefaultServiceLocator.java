@@ -42,7 +42,7 @@ public class DefaultServiceLocator implements ServiceLocator {
                 try {
                     return CLIENT.sendAndExpect(rpcInvocation);
                 } catch (Exception e) {
-                    log.info(e.getMessage());
+                    log.info("Remote call exception, err msg = {}", e.getMessage());
                     TimeUnit.SECONDS.sleep(2);
                 }
             }

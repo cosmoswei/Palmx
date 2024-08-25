@@ -12,6 +12,7 @@ import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
 import io.netty.incubator.codec.quic.*;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.net.AbstractPalmxServer;
+import me.xuqu.palmx.registry.ZookeeperUpdater;
 
 import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
@@ -29,6 +30,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
 
     @Override
     protected void doStart() {
+        ZookeeperUpdater.startUpdating();
         NioEventLoopGroup group = new NioEventLoopGroup(1);
         SelfSignedCertificate cert = null;
         try {
@@ -68,7 +70,8 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                     .channel(NioDatagramChannel.class)
                     .handler(channelHandler)
                     .bind(new InetSocketAddress(port)).sync().channel();
-            channel.closeFuture();
+            channel.closeFuture().sync();
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -7,6 +7,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -25,6 +27,15 @@ public class ZookeeperUpdater {
     public static void startUpdating() {
         // 获取所以服务
         Set<String> services = ServiceRegistry.services;
+
+        String hostAddress;
+        try {
+            hostAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        int palmxServerPort = PalmxConfig.getPalmxServerPort();
+        String serviceAddress = String.format("%s:%d", hostAddress, palmxServerPort);
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 int localQoSLevel = QoSHandler.getLocalQoSLevel();
@@ -36,15 +47,16 @@ public class ZookeeperUpdater {
                     int serializationType = PalmxConfig.getSerializationType().ordinal();
                     RegistryDTO registryDTO = new RegistryDTO();
                     registryDTO.setProtocol("http3");
-                    registryDTO.setHost("serviceAddress");
-                    registryDTO.setPort(8080);
+                    registryDTO.setHost(serviceAddress);
+                    registryDTO.setPort(palmxServerPort);
                     registryDTO.setServiceName(service);
                     // 获取本地的数据指标对象
                     registryDTO.setQoSLevel(localQoSLevel);
                     registryDTO.setTmRefresh(new Date());
                     byte[] registryDTOByte = serialize((byte) serializationType, registryDTO);
                     // 得到更新QoS与刷新时间
-                    String s = CuratorUtils.buildNodePath(service, "as");
+
+                    String s = CuratorUtils.buildNodePath(service, serviceAddress);
                     updateZNode(s, registryDTOByte);
                 }
             } catch (Exception e) {
