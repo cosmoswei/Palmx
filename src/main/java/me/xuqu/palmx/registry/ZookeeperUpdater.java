@@ -1,10 +1,11 @@
 package me.xuqu.palmx.registry;
 
-import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.qos.QoSHandler;
 import me.xuqu.palmx.util.CuratorUtils;
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.Set;
@@ -14,27 +15,22 @@ import java.util.concurrent.TimeUnit;
 
 import static me.xuqu.palmx.serialize.Serialization.serialize;
 
-@Slf4j
 public class ZookeeperUpdater {
 
+    private static final Logger log = LoggerFactory.getLogger(ZookeeperUpdater.class);
     private static CuratorFramework client = CuratorUtils.getClient();
     private static final ScheduledExecutorService scheduler =
             Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 
-    public static void startUpdating(String path, String newData) {
-
-    }
-
     public static void startUpdating() {
         // 获取所以服务
         Set<String> services = ServiceRegistry.services;
-
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                log.info("正在更新当前主机的节点信息");
                 int localQoSLevel = QoSHandler.getLocalQoSLevel();
                 // 遍历服务
                 for (String service : services) {
+                    log.info("正在更新当前主机的节点信息 当前服务 service = {}", service);
                     // 根据服务获取节点内容
                     // 构建注册节点对象
                     int serializationType = PalmxConfig.getSerializationType().ordinal();
@@ -48,7 +44,8 @@ public class ZookeeperUpdater {
                     registryDTO.setTmRefresh(new Date());
                     byte[] registryDTOByte = serialize((byte) serializationType, registryDTO);
                     // 得到更新QoS与刷新时间
-                    updateZNode(service, registryDTOByte);
+                    String s = CuratorUtils.buildNodePath(service, "as");
+                    updateZNode(s, registryDTOByte);
                 }
             } catch (Exception e) {
                 log.warn("update zk err, msg = {}", e.getMessage());
@@ -64,7 +61,6 @@ public class ZookeeperUpdater {
         } else {
             client.create().creatingParentsIfNeeded().forPath(path, dataBytes);
         }
-        log.info("Updated node {} with data: {}", path, dataBytes);
     }
 
     public void stop() {

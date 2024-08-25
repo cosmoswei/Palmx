@@ -2,10 +2,11 @@ package me.xuqu.palmx.registry;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class RegistryDTO {
+public class RegistryDTO implements Serializable {
     /**
      * 服务质量等级
      */

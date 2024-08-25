@@ -68,13 +68,13 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                     .channel(NioDatagramChannel.class)
                     .handler(channelHandler)
                     .bind(new InetSocketAddress(port)).sync().channel();
-            channel.closeFuture().sync();
+            channel.closeFuture();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             group.shutdownGracefully();
         }
-
+        log.info("NettyHttp3Server started on port {}", port);
     }
 
     @Override

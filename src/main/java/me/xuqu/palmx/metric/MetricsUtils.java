@@ -56,6 +56,9 @@ public class MetricsUtils {
         long softIrq = endTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()] - startTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()];
         long steal = endTicks[CentralProcessor.TickType.STEAL.getIndex()] - startTicks[CentralProcessor.TickType.STEAL.getIndex()];
         long totalCpu = user + nice + sys + idle + ioWait + irq + softIrq + steal;
+        if (totalCpu == 0) {
+            return 0;
+        }
         long usedCpu = user + sys;
         return Arith.round(Arith.mul(Arith.div(usedCpu, totalCpu, 2), 100), 2);
     }

@@ -208,7 +208,7 @@ public class CuratorUtils {
      * @param serviceAddress 服务地址，如 192.168.16.16:8080
      * @return 绝对路径
      */
-    private String buildNodePath(String serviceName, String serviceAddress) {
+    public String buildNodePath(String serviceName, String serviceAddress) {
         String zookeeperRootNode = PalmxConfig.getZookeeperRootNode();
         String path = String.format("%s/%s/%s", zookeeperRootNode, serviceName, serviceAddress);
         if (path.startsWith("/")) {

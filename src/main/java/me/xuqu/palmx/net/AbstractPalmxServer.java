@@ -34,6 +34,7 @@ public abstract class AbstractPalmxServer implements PalmxServer {
         doStart();
         // 启动更新ZK线程
         ZookeeperUpdater.startUpdating();
+        log.info("server start success");
     }
 
     @Override
