@@ -83,6 +83,12 @@ public class PalmxConfig {
         return property == null ? DEFAULT_PALMX_IO_THREADS : Integer.parseInt(property);
     }
 
+
+    public static String getMetricQoSRulePath() {
+        String property = getProperty(PropertyKey.METRIC_QOS_RULE_PATH);
+        return property == null ? DEFAULT_METRIC_QOS_RULE_PATH : property;
+    }
+
     /**
      * 获取当前项目所使用的 Zookeeper 根节点
      *

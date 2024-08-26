@@ -14,11 +14,12 @@ public class PalmxConstants {
         static final String IO_THREADS = PREFIX + ".io-threads";
         static final String QUIC_ENABLE_ = PREFIX + ".quic-enable";
         static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";
-
+        static final String METRIC_QOS_RULE_PATH = PREFIX + ".metric-qos-rule-path";
     }
 
     public static final String DEFAULT_ZOOKEEPER_ADDRESS = "127.0.0.1:8121";
     public static final String DEFAULT_ZOOKEEPER_ROOT_NODE = "palmx";
+    public static final String DEFAULT_METRIC_QOS_RULE_PATH = "drl/defaultMetric.drl";
 
     public static final int DEFAULT_PALMX_SERVER_PORT = 8080;
     public static final int DEFAULT_PALMX_IO_THREADS = Runtime.getRuntime().availableProcessors();
