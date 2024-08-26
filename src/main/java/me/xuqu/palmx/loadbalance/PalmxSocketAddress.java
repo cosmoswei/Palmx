@@ -8,6 +8,7 @@ public class PalmxSocketAddress extends InetSocketAddress implements Comparable<
     private int effectiveWeight;
     private int currentWeight;
     private boolean isAvailable = true;
+    private int qoSLevel;
 
     public PalmxSocketAddress(String host, int port) {
         super(host, port);
@@ -50,6 +51,14 @@ public class PalmxSocketAddress extends InetSocketAddress implements Comparable<
 
     public void setEffectiveWeight(Integer effectiveWeight) {
         this.effectiveWeight = effectiveWeight;
+    }
+
+    public int getQoSLevel() {
+        return this.qoSLevel;
+    }
+
+    public void setQoSLevel(int qoSLevel) {
+        this.qoSLevel = qoSLevel;
     }
 
     public Integer getCurrentWeight() {

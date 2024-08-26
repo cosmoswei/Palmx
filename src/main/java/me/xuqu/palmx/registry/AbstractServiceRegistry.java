@@ -39,10 +39,13 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         if (!CollectionUtils.isEmpty(ifPresent)) {
             return ifPresent;
         } else {
-            List<String> serviceAddresses = doLookup(serviceName);
+            List<RegistryDTO> serviceAddresses = doLookup(serviceName);
             List<PalmxSocketAddress> inetSocketAddresses = serviceAddresses.stream().map(s -> {
-                String[] strings = s.split(":");
-                return new PalmxSocketAddress(strings[0], Integer.parseInt(strings[1]));
+                String host = s.getHost();
+                int port = s.getPort();
+                PalmxSocketAddress palmxSocketAddress = new PalmxSocketAddress(host, port);
+                palmxSocketAddress.setQoSLevel(s.getQoSLevel());
+                return palmxSocketAddress;
             }).collect(Collectors.toList());
             if (inetSocketAddresses.isEmpty()) {
                 throw new ServiceNotFoundException(serviceName);
@@ -54,5 +57,5 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
     protected abstract void doRegister(String serviceName, String serviceAddress);
 
-    protected abstract List<String> doLookup(String serviceName);
+    protected abstract List<RegistryDTO> doLookup(String serviceName);
 }

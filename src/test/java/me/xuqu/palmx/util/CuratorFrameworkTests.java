@@ -1,5 +1,6 @@
 package me.xuqu.palmx.util;
 
+import me.xuqu.palmx.registry.RegistryDTO;
 import org.apache.curator.framework.CuratorFramework;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,13 +42,13 @@ public class CuratorFrameworkTests {
 
     @Test
     public void deleteByServiceName() {
-        List<String> childrenNodes = CuratorUtils.getChildrenNodes(testServiceName);
+        List<RegistryDTO> childrenNodes = CuratorUtils.getChildrenNodes(testServiceName);
 
         // 这里的 childNode 就是 serviceAddress
-        for (String childNode : childrenNodes) {
-            CuratorUtils.deleteNode(testServiceName, childNode);
+        for (RegistryDTO childNode : childrenNodes) {
+            String host = childNode.getHost();
+            CuratorUtils.deleteNode(testServiceName, host);
         }
-
         Assertions.assertEquals(0, CuratorUtils.getChildrenNodes(testServiceName).size());
     }
 
@@ -59,7 +60,7 @@ public class CuratorFrameworkTests {
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.10:8080");
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.20:8080");
         CuratorUtils.createEphemeralNode(testServiceName, "192.138.24.30:8080");
-        List<String> childrenNodes = CuratorUtils.getChildrenNodes(testServiceName);
+        List<RegistryDTO> childrenNodes = CuratorUtils.getChildrenNodes(testServiceName);
         Assertions.assertEquals(3, childrenNodes.size());
     }
 }

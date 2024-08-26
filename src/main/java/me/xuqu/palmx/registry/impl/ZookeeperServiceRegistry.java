@@ -3,6 +3,7 @@ package me.xuqu.palmx.registry.impl;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.registry.AbstractServiceRegistry;
+import me.xuqu.palmx.registry.RegistryDTO;
 import me.xuqu.palmx.util.CuratorUtils;
 
 import java.util.List;
@@ -22,8 +23,8 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry {
     }
 
     @Override
-    protected List<String> doLookup(String serviceName) {
-        List<String> childrenNodes = CuratorUtils.getChildrenNodes(serviceName);
+    protected List<RegistryDTO> doLookup(String serviceName) {
+        List<RegistryDTO> childrenNodes = CuratorUtils.getChildrenNodes(serviceName);
         log.debug("Get services[name = {}] from zookeeper, {}", serviceName, childrenNodes);
         return childrenNodes;
     }

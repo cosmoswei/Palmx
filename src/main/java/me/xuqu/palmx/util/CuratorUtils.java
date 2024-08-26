@@ -12,12 +12,10 @@ import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static me.xuqu.palmx.serialize.Serialization.deserialize;
 import static me.xuqu.palmx.serialize.Serialization.serialize;
 
 /**
@@ -133,10 +131,17 @@ public class CuratorUtils {
      * @param serviceName 服务名
      * @return 节点列表
      */
-    public List<String> getChildrenNodes(String serviceName) {
+    public List<RegistryDTO> getChildrenNodes(String serviceName) {
         try {
             String nodePath = buildNodePath(serviceName);
-            List<String> services = getClient().getChildren().forPath(nodePath);
+            List<RegistryDTO> services = new ArrayList<>();
+            List<String> allChildren = getClient().getChildren().forPath(nodePath);
+            for (String child : allChildren) {
+                String childPath = serviceName + "/" + child;
+                RegistryDTO data = getData(getClient(), childPath, RegistryDTO.class);
+                // 处理子节点数据（打印、存储等）
+                services.add(data);
+            }
             log.debug("Get children nodes from zookeeper, path = {}, result = {}", nodePath, services);
             return services;
         } catch (Exception e) {
@@ -146,8 +151,12 @@ public class CuratorUtils {
             log.error("Get children nodes failed, {}", e.getMessage());
             e.printStackTrace();
         }
-
         return Collections.emptyList();
+    }
+
+    public static <T> T getData(CuratorFramework client, String path, Class<T> clazz) throws Exception {
+        byte[] data = client.getData().forPath(path);
+        return deserialize((byte) PalmxConfig.getSerializationType().ordinal(), clazz, data);
     }
 
     /**
