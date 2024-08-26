@@ -47,7 +47,7 @@ public class ZookeeperUpdater {
                     int serializationType = PalmxConfig.getSerializationType().ordinal();
                     RegistryDTO registryDTO = new RegistryDTO();
                     registryDTO.setProtocol("http3");
-                    registryDTO.setHost(serviceAddress);
+                    registryDTO.setHost(hostAddress);
                     registryDTO.setPort(palmxServerPort);
                     registryDTO.setServiceName(service);
                     // 获取本地的数据指标对象

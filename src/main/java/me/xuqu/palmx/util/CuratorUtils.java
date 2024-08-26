@@ -137,7 +137,7 @@ public class CuratorUtils {
             List<RegistryDTO> services = new ArrayList<>();
             List<String> allChildren = getClient().getChildren().forPath(nodePath);
             for (String child : allChildren) {
-                String childPath = serviceName + "/" + child;
+                String childPath =  nodePath + "/" + child;
                 RegistryDTO data = getData(getClient(), childPath, RegistryDTO.class);
                 // 处理子节点数据（打印、存储等）
                 services.add(data);

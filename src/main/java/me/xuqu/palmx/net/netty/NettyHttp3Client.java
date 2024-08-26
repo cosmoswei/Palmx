@@ -48,7 +48,8 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
-        InetSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
+        PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
+        log.info("get ip =  {}'s qoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
         try {
             QuicStreamChannel quicStreamChannel = getQuicStreamChannel(socketAddress);
             Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();
@@ -74,6 +75,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 throw ((RpcInvocationException) promise.cause());
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("send error, msg = {}", e.getMessage());
             throw new RpcInvocationException("send error, msg = " + e.getMessage());
         }
