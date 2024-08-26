@@ -11,6 +11,7 @@ import org.kie.api.runtime.KieSession;
 
 public class Metric2QoSRule {
 
+    private KieContainer kieContainer;
 
     public QoS getQoS(Metrics metrics) {
         QoS qoS = new QoS();
@@ -31,32 +32,6 @@ public class Metric2QoSRule {
         return qoS;
     }
 
-    public QoS getQoS2(Metrics metrics) {
-        QoS qoS = new QoS();
-        // 获取 KieContainer，加载默认的 KIE 基础设施
-        KieContainer kieContainer = kieServices.getKieClasspathContainer();
-
-        // 从 KieContainer 获取 KieSession
-        KieSession kieSession = kieContainer.newKieSession("metric-rules");
-
-        kieSession.setGlobal("qoS", qoS);
-        // 插入数据到 KieSession
-        kieSession.insert(metrics);
-
-        // 触发规则执行
-        kieSession.fireAllRules();
-
-        // 关闭 KieSession
-        kieSession.dispose();
-        return qoS;
-    }
-
-    // 开启会话
-    // 创建 KieServices 实例
-    private final KieServices kieServices = KieServices.Factory.get();
-
-    KieContainer kieContainer;
-
     public KieSession getKieSession(String customRulesFilePath) {
 
         if (kieContainer == null) {
@@ -72,8 +47,6 @@ public class Metric2QoSRule {
             kieBuilder.buildAll();
             kieContainer = kieServices.newKieContainer(kieServices.getRepository().getDefaultReleaseId());
         }
-
-
         // 创建 KieSession 并返回
         return kieContainer.newKieSession();
     }
