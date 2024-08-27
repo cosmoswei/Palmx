@@ -15,12 +15,11 @@ rule "defaultRule"
         Metrics(jvmMetrics.getBlockedThreads() < 10)
     then
         // 则将QoS等级设为10
-        qoS.setQoSLevel(20);
+        qoS.setQoSLevel(201);
 
 end
 
 rule "bottomRule"
-
     when
     then
         // 如果QoS大于100，则将QoS等级设为100
