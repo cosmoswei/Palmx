@@ -15,7 +15,7 @@ public class PalmxConstants {
         static final String QUIC_ENABLE = PREFIX + ".quic-enable";
         static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";
         static final String METRIC_QOS_RULE_PATH = PREFIX + ".metric-qos-rule-path";
-        static final String ADAPTIVE_FLOW_CONTROL_ENABLE = PREFIX + ".adaptive_flow_control-enable";
+        static final String ADAPTIVE_FLOW_CONTROL_ENABLE = PREFIX + ".adaptive-flow-control-enable";
 
 
     }
