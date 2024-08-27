@@ -10,6 +10,7 @@ import java.util.Random;
  * 权重随机负载均衡算法
  */
 public class WeightRandomLoadBalance extends AbstractLoadBalance {
+
     private final Random random;
     int totalWeight;
 

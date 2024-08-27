@@ -3,10 +3,13 @@ package me.xuqu.palmx.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j;
+import me.xuqu.palmx.metric.pojo.Metrics;
 
 import java.util.List;
 import java.util.Map;
 
+@Log4j
 public class JsonUtils {
 
     // 创建 ObjectMapper 实例，用于转换 Java 对象和 JSON 数据
@@ -17,7 +20,8 @@ public class JsonUtils {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting object to JSON", e);
+//            throw new RuntimeException("Error converting object to JSON", e);
+            return "";
         }
     }
 
@@ -26,7 +30,8 @@ public class JsonUtils {
         try {
             return objectMapper.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON to object", e);
+//            throw new RuntimeException("Error converting JSON to object", e);
+            return null;
         }
     }
 
@@ -35,7 +40,8 @@ public class JsonUtils {
         try {
             return objectMapper.readValue(json, javaType);
         } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON to object", e);
+//            throw new RuntimeException("Error converting JSON to object", e);
+            return null;
         }
     }
 
@@ -44,7 +50,8 @@ public class JsonUtils {
         try {
             return objectMapper.readValue(json, objectMapper.getTypeFactory().constructMapType(Map.class, String.class, clazz));
         } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON to Map", e);
+//            throw new RuntimeException("Error converting JSON to Map", e);
+            return null;
         }
     }
 
@@ -53,7 +60,8 @@ public class JsonUtils {
         try {
             return objectMapper.writeValueAsString(list);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting list to JSON", e);
+//            throw new RuntimeException("Error converting list to JSON", e);
+            return "";
         }
     }
 
@@ -62,7 +70,8 @@ public class JsonUtils {
         try {
             return objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON to List", e);
+//            throw new RuntimeException("Error converting JSON to List", e);
+            return null;
         }
     }
 }

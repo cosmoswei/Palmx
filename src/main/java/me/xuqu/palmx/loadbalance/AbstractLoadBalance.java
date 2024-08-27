@@ -1,6 +1,7 @@
 package me.xuqu.palmx.loadbalance;
 
 import lombok.extern.slf4j.Slf4j;
+import me.xuqu.palmx.util.JsonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             return (socketAddressList.get(0).isAvailable()) ? socketAddressList.get(0) : null;
 
         PalmxSocketAddress socketAddress = doChoose(socketAddressList, serviceName);
-        log.debug("Choose a server[{}] for service[name = {}] with services = {}", socketAddress, serviceName, socketAddressList);
+        log.debug("Choose a server[{}] for service[name = {}] with services = {}", JsonUtils.toJson(socketAddress), serviceName, socketAddressList);
         return socketAddress;
     }
 
