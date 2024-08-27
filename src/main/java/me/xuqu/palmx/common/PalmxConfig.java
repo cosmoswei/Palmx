@@ -56,8 +56,6 @@ public class PalmxConfig {
             return FlowControlType.LEAK_BUCKET;
         } else if ("token-bucket".equals(property)) {
             return FlowControlType.TOKEN_BUCKET;
-        } else if ("adaptive".equals(property)) {
-            return FlowControlType.ADAPTIVE;
         } else {
             return FlowControlType.SLIDING_WINDOW;
         }
@@ -69,7 +67,7 @@ public class PalmxConfig {
     }
 
     public static boolean getQuicEnable() {
-        String property = getProperty(PropertyKey.QUIC_ENABLE_);
+        String property = getProperty(PropertyKey.QUIC_ENABLE);
         return "ture".equals(property) || "Ture".equals(property);
     }
 
@@ -87,6 +85,12 @@ public class PalmxConfig {
     public static String getMetricQoSRulePath() {
         String property = getProperty(PropertyKey.METRIC_QOS_RULE_PATH);
         return property == null ? DEFAULT_METRIC_QOS_RULE_PATH : property;
+    }
+
+
+    public static boolean getAdaptiveFlowControlEnable() {
+        String property = getProperty(PropertyKey.ADAPTIVE_FLOW_CONTROL_ENABLE);
+        return "ture".equals(property) || "Ture".equals(property);
     }
 
     /**

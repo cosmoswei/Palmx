@@ -49,7 +49,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
         PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
-        log.info("get ip =  {}'s qoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
+        log.info("choose ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
         try {
             QuicStreamChannel quicStreamChannel = getQuicStreamChannel(socketAddress);
             Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();

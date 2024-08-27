@@ -17,15 +17,13 @@ public class TokenBucketFlowControl extends AbstractFlowControl {
     public long lastTime;
     // 桶的容量
     public int capacity;
-    // 令牌生成速度 /s
-    public int rate;
+    // 令牌生成速度 /s = super.qps
     // 当前令牌数量
     public AtomicInteger tokens = new AtomicInteger(0);
 
     public TokenBucketFlowControl(int qps) {
         this.lastTime = qps;
         this.capacity = qps;
-        this.rate = qps;
         super.qps = qps;
     }
 
@@ -35,10 +33,10 @@ public class TokenBucketFlowControl extends AbstractFlowControl {
         //时间间隔,单位为 ms
         long gap = now - lastTime;
         //计算时间段内的令牌数
-        int reverse_permits = (int) (gap * rate / 1000);
-        int all_permits = tokens.get() + reverse_permits;
+        int reversePermits = (int) (gap * qps / 1000);
+        int allPermits = tokens.get() + reversePermits;
         // 当前令牌数
-        tokens.set(Math.min(capacity, all_permits));
+        tokens.set(Math.min(capacity, allPermits));
         log.info("tokens {} capacity {} gap {} ", tokens, capacity, gap);
         if (tokens.get() < 1) {
             // 若拿不到令牌,则拒绝

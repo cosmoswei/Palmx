@@ -17,7 +17,7 @@ public class SlidingWindowFlowControl extends AbstractFlowControl {
 
     public SlidingWindowFlowControl(int qps) {
         this.maxRequests = qps;
-        this.windowSizeInMillis = 1 * 1000;
+        this.windowSizeInMillis = 1000;
         this.requestTimestamps = new LinkedList<>();
         super.qps = qps;
     }

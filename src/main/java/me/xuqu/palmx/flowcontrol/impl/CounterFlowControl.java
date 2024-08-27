@@ -17,8 +17,6 @@ public class CounterFlowControl extends AbstractFlowControl {
     private static long startTime = System.currentTimeMillis();
     // 时间区间的时间间隔 ms
     private final long interval;
-    // 每秒限制数量
-    private final long maxCount;
     //累加器
     private final AtomicLong accumulator = new AtomicLong(0);
 
@@ -28,7 +26,7 @@ public class CounterFlowControl extends AbstractFlowControl {
         //在时间区间之内
         if (nowTime < startTime + interval) {
             long count = accumulator.incrementAndGet();
-            return count > maxCount;
+            return count > qps;
         } else {
             //在时间区间之外
             synchronized (this) {
@@ -44,8 +42,7 @@ public class CounterFlowControl extends AbstractFlowControl {
 
 
     public CounterFlowControl(int qps) {
-        super.qps = qps;
         this.interval = 1000;
-        this.maxCount = qps;
+        super.qps = qps;
     }
 }

@@ -12,15 +12,13 @@ public class LeakBucketFlowControl extends AbstractFlowControl {
 
     // 计算的起始时间
     private long lastOutTime = System.currentTimeMillis();
-    // 流出速率 每秒 2 次
-    private final int leakRate;
+
     // 桶的容量
     private final int capacity;
     //剩余的水量
     private final AtomicInteger water = new AtomicInteger(0);
 
     public LeakBucketFlowControl(int qps) {
-        this.leakRate = qps;
         this.capacity = qps;
         super.qps = qps;
     }
@@ -34,7 +32,7 @@ public class LeakBucketFlowControl extends AbstractFlowControl {
             return false;
         }
         // 执行漏水
-        int waterLeaked = ((int) ((System.currentTimeMillis() - lastOutTime) / 1000)) * leakRate;
+        int waterLeaked = ((int) ((System.currentTimeMillis() - lastOutTime) / 1000)) * qps;
         // 计算剩余水量
         int waterLeft = water.get() - waterLeaked;
         water.set(Math.max(0, waterLeft));

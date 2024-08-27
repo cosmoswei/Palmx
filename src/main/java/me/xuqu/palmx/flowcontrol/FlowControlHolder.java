@@ -2,7 +2,10 @@ package me.xuqu.palmx.flowcontrol;
 
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.FlowControlType;
-import me.xuqu.palmx.flowcontrol.impl.*;
+import me.xuqu.palmx.flowcontrol.impl.CounterFlowControl;
+import me.xuqu.palmx.flowcontrol.impl.LeakBucketFlowControl;
+import me.xuqu.palmx.flowcontrol.impl.SlidingWindowFlowControl;
+import me.xuqu.palmx.flowcontrol.impl.TokenBucketFlowControl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,9 +26,6 @@ public class FlowControlHolder {
             case TOKEN_BUCKET:
                 flowControl = new TokenBucketFlowControl(limitCount);
                 break;
-            case ADAPTIVE:
-                flowControl = new AdaptiveFlowControl(limitCount);
-                break;
             case SLIDING_WINDOW:
             default:
                 flowControl = new SlidingWindowFlowControl(limitCount);
@@ -34,7 +34,8 @@ public class FlowControlHolder {
     }
 
     public static synchronized void initFlowControl(FlowControlMetadata flowControlMetadata) {
-        FlowControl flowControl = get(flowControlMetadata.limitCount, flowControlMetadata.flowControlType);
+        FlowControl flowControl = get(flowControlMetadata.limitCount,
+                flowControlMetadata.flowControlType);
         flowControlMap.put(flowControlMetadata.flowControlKey, flowControl);
         log.info("initFlowControl flowControlMetadata = {},", flowControlMetadata);
     }

@@ -12,9 +12,12 @@ public class PalmxConstants {
         static final String LOAD_BALANCE_TYPE = PREFIX + ".load-balancer";
         static final String FLOW_CONTROL_TYPE = PREFIX + ".flow-control";
         static final String IO_THREADS = PREFIX + ".io-threads";
-        static final String QUIC_ENABLE_ = PREFIX + ".quic-enable";
+        static final String QUIC_ENABLE = PREFIX + ".quic-enable";
         static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";
         static final String METRIC_QOS_RULE_PATH = PREFIX + ".metric-qos-rule-path";
+        static final String ADAPTIVE_FLOW_CONTROL_ENABLE = PREFIX + ".adaptive_flow_control-enable";
+
+
     }
 
     public static final String DEFAULT_ZOOKEEPER_ADDRESS = "127.0.0.1:8121";
