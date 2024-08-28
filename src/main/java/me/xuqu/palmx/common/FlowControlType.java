@@ -6,5 +6,4 @@ public enum FlowControlType {
     SLIDING_WINDOW,
     LEAK_BUCKET,
     TOKEN_BUCKET,
-
 }

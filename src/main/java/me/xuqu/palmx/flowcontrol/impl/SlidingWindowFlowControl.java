@@ -33,10 +33,10 @@ public class SlidingWindowFlowControl extends AbstractFlowControl {
         if (requestTimestamps.size() < maxRequests) {
             requestTimestamps.add(currentTime);
             log.debug("Request allowed at {}", currentTime);
-            return true;
+            return false;
         } else {
             log.debug("Request denied at {}", currentTime);
-            return false;
+            return true;
         }
     }
 

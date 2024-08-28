@@ -36,7 +36,7 @@ public class CounterFlowControl extends AbstractFlowControl {
                     startTime = nowTime;
                 }
             }
-            return true;
+            return false;
         }
     }
 
