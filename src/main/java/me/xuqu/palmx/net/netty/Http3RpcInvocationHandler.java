@@ -7,6 +7,9 @@ import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConstants;
+import me.xuqu.palmx.exception.FlowControlException;
+import me.xuqu.palmx.flowcontrol.FlowControlHolder;
+import me.xuqu.palmx.flowcontrol.FlowControlReq;
 import me.xuqu.palmx.invoke.InvokeHandler;
 import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
@@ -36,6 +39,11 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
 //        long start = System.currentTimeMillis();
         RpcMessage rpcMessage = MessageCodecHelper.decodeRpcMessage(frame.content());
         RpcInvocation rpcInvocation = (RpcInvocation) rpcMessage.getData();
+        boolean control = FlowControlHolder.control(new FlowControlReq(rpcInvocation.getInterfaceName()));
+        if (control) {
+            throw new FlowControlException("Flow control exception");
+        }
+
         RpcResponse rpcResponse = InvokeHandler.doInvoke(rpcInvocation);
         rpcResponse.setSequenceId(rpcMessage.getSequenceId());
         RpcMessage rpcMessage2 = new RpcMessage(rpcResponse.getSequenceId(), rpcResponse);

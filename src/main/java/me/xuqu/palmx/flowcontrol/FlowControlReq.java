@@ -12,4 +12,8 @@ public class FlowControlReq {
      * 流控键
      */
     public String flowControlKey;
+
+    public FlowControlReq(String flowControlKey) {
+        this.flowControlKey = flowControlKey;
+    }
 }
