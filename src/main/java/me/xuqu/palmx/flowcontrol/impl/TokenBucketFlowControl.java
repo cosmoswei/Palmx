@@ -22,7 +22,7 @@ public class TokenBucketFlowControl extends AbstractFlowControl {
     public AtomicInteger tokens = new AtomicInteger(0);
 
     public TokenBucketFlowControl(int qps) {
-        this.lastTime = qps;
+        this.lastTime = System.currentTimeMillis();
         this.capacity = qps;
         super.qps = qps;
     }
