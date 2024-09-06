@@ -23,10 +23,8 @@ public class Metric2QoSRule {
         kieSession.setGlobal("qoS", qoS);
         // 插入数据到 KieSession
         kieSession.insert(metrics);
-
         // 触发规则执行
         kieSession.fireAllRules();
-
         // 关闭 KieSession
         kieSession.dispose();
         return qoS;

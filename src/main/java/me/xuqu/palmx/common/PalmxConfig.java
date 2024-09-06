@@ -71,6 +71,11 @@ public class PalmxConfig {
         return "ture".equals(property) || "Ture".equals(property);
     }
 
+    public static boolean getIoUringEnable() {
+        String property = getProperty(PropertyKey.IO_URING_ENABLE);
+        return "ture".equals(property) || "Ture".equals(property);
+    }
+
     public static int getInitialMaxStreamsBidirectional() {
         String property = getProperty(PropertyKey.QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL);
         return property == null ? DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL : Integer.parseInt(property);

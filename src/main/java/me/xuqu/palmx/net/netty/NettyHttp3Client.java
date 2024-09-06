@@ -7,7 +7,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
 import io.netty.incubator.codec.quic.QuicChannel;
@@ -123,7 +122,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             ChannelHandler channelHandler = getChannelHandler();
             Bootstrap bs = new Bootstrap();
             Channel channel = bs.group(group)
-                    .channel(NioDatagramChannel.class)
+                    .channel(DatagramChannelHandler.getChannelClass())
                     .handler(channelHandler)
                     .bind(0).sync().channel();
             quicChannel = QuicChannel.newBootstrap(channel)
