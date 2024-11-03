@@ -153,3 +153,71 @@ public class DefaultServiceLocator implements ServiceLocator {
 }
 ```
 
+
+## 高级特性
+
+### 
+
+### 高效传输：HTTP3
+
+palmx.properties 配置
+
+```properties
+palmx.quic-enable=ture
+```
+
+
+
+### 高效读写：io_uring
+
+palmx.properties 配置
+
+```properties
+palmx.io_uring-enable=ture
+```
+
+
+
+
+
+### 自适应复杂均衡
+
+### 自适应负载均衡
+
+palmx.properties 配置
+
+```properties
+palmx.load-balancer=adaptive
+```
+
+
+
+### 自适应流量控制
+
+### 自适应限流
+
+palmx.properties 配置
+
+```properties
+palmx.adaptive-flow-control-enable=true
+```
+
+
+
+
+
+### 配置化评分体系
+
+### 规则引擎
+
+palmx.properties 配置
+
+```properties
+palmx.metric-qos-rule-path=drl/customMetric.drl
+```
+
+
+
+
+
+### 虚拟线程
