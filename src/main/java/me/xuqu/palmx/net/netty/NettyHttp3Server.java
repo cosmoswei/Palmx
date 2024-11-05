@@ -5,15 +5,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.incubator.channel.uring.IOUring;
-import io.netty.incubator.channel.uring.IOUringDatagramChannel;
 import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
 import io.netty.incubator.codec.quic.*;
 import lombok.extern.slf4j.Slf4j;
-import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.net.AbstractPalmxServer;
 import me.xuqu.palmx.registry.ZookeeperUpdater;
 
@@ -83,7 +79,6 @@ public class NettyHttp3Server extends AbstractPalmxServer {
         }
         log.info("NettyHttp3Server started on port {}", port);
     }
-
 
 
     @Override
