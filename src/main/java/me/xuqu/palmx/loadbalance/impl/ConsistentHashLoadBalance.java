@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
@@ -30,8 +32,42 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             selector = selectors.get(serviceName);
         }
 
-        String[] strings = selector.select(serviceName).split(":");
-        return new PalmxSocketAddress(strings[0].substring(1), Integer.parseInt(strings[1]));
+        return parseStringToServer(selector.select(serviceName));
+    }
+
+    public static PalmxSocketAddress parseStringToServer(String input) {
+
+        // 使用正则匹配键值对
+        Pattern pattern = Pattern.compile("(\\w+)='?(.*?)'?([,}])");
+        Matcher matcher = pattern.matcher(input);
+        String addr = "";
+        int port = 0;
+        int weight = 0;
+        int effectiveWeight = 0;
+        int currentWeight = 0;
+        while (matcher.find()) {
+            String key = matcher.group(1);  // 键
+            String value = matcher.group(2); // 值
+            // 根据键值设置对象属性
+            switch (key) {
+                case "ip":
+                    addr = value;
+                    break;
+                case "weight":
+                    weight = Integer.parseInt(value);
+                    break;
+                case "effectiveWeight":
+                    effectiveWeight = Integer.parseInt(value);
+                    break;
+                case "currentWeight":
+                    currentWeight = Integer.parseInt(value);
+                    break;
+            }
+        }
+        PalmxSocketAddress server = new PalmxSocketAddress(addr, port, weight);
+        server.setCurrentWeight(currentWeight);
+        server.setCurrentWeight(effectiveWeight);
+        return server;
     }
 
     static class ConsistentHashSelector {
