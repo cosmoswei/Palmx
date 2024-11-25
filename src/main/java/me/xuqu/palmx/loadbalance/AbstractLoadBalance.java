@@ -25,17 +25,8 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         if (Boolean.TRUE.equals(absent)) {
             return;
         }
-        List<PalmxSocketAddress> fleshSocketAddress = serviceNodes.get(service);
-        if (fleshSocketAddress == null) {
-            serviceNodes.put(service, palmxSocketAddresses);
-            return;
-        }
-        // 删除过期的节点
-        fleshSocketAddress.removeIf(e -> !palmxSocketAddresses.contains(e));
-        // 新增新节点
-        palmxSocketAddresses.removeIf(fleshSocketAddress::contains);
-        fleshSocketAddress.addAll(palmxSocketAddresses);
-        serviceNodes.put(service, fleshSocketAddress);
+        // 更新节点
+        serviceNodes.put(service, palmxSocketAddresses);
     }
 
     public synchronized void notifyRefresh(String serviceName) {
