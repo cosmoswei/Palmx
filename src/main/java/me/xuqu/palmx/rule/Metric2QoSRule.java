@@ -16,6 +16,7 @@ public class Metric2QoSRule {
     public QoS getQoS(Metrics metrics) {
         QoS qoS = new QoS();
 
+        // 规则文件
         String metricQoSRulePath = PalmxConfig.getMetricQoSRulePath();
 
         KieSession kieSession = getKieSession(metricQoSRulePath);

@@ -106,15 +106,10 @@
             <artifactId>micrometer-core</artifactId>
             <version>1.9.17</version>
         </dependency>
-        <!-- 规则引擎 -->
+        <!-- 规则引擎  -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-core</artifactId>
-            <version>7.59.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-compiler</artifactId>
             <version>7.59.0.Final</version>
         </dependency>
         <dependency>

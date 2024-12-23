@@ -79,7 +79,7 @@ public class MetricsHolder {
         return null;
     }
 
-    public static Metrics getLocaleMetrics() {
+    public static Metrics getLocalMetrics() {
         return getMetrics0();
     }
 }

@@ -30,7 +30,8 @@ public class QoSHandler {
     }
 
     public static int getLocalQoSLevel() {
-        Metrics localeMetrics = MetricsHolder.getLocaleMetrics();
+        //
+        Metrics localeMetrics = MetricsHolder.getLocalMetrics();
         log.info("localMetrics is [{}]", JsonUtils.toJson(localeMetrics));
         int qoSLevel = getQoSLevel(localeMetrics);
         log.info("get local qos level is {}", qoSLevel);
