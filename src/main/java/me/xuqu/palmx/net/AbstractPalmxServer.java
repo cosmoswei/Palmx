@@ -3,7 +3,6 @@ package me.xuqu.palmx.net;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
-import me.xuqu.palmx.registry.ZookeeperUpdater;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -31,9 +30,9 @@ public abstract class AbstractPalmxServer implements PalmxServer {
     @Override
     public void start() {
         inetSocketAddress = new PalmxSocketAddress(host, port);
+        log.info("config = {}", PalmxConfig.list());
         doStart();
         // 启动更新ZK线程
-
     }
 
     @Override

@@ -19,7 +19,7 @@ public class DatagramChannelHandler {
         if (iOUringAvailable && ioUringEnable) {
             return IOUringDatagramChannel.class;
         }
-        log.info("get iOUringDatagramChannel fail, available = {} , enable =  {}", iOUringAvailable, ioUringEnable);
+        log.debug("get iOUringDatagramChannel fail, available = {} , enable =  {}", iOUringAvailable, ioUringEnable);
         return NioDatagramChannel.class;
     }
 }

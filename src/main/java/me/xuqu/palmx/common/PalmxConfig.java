@@ -112,7 +112,7 @@ public class PalmxConfig {
         String zookeeperHost = getProperty(PropertyKey.ZOOKEEPER_HOST);
         String zookeeperPort = getProperty(PropertyKey.ZOOKEEPER_PORT);
         if (zookeeperHost != null && zookeeperPort != null) {
-            return String.format("%s:%s", zookeeperHost, zookeeperPort);
+            return java.lang.String.format("%s:%s", zookeeperHost, zookeeperPort);
         } else {
             return DEFAULT_ZOOKEEPER_ADDRESS;
         }
@@ -142,6 +142,13 @@ public class PalmxConfig {
 
     public static String getProperty(String key) {
         return properties.getProperty(key);
+    }
+
+    public static String list() {
+        // 使用 StringBuilder 构建字符串
+        StringBuilder sb = new StringBuilder();
+        properties.forEach((key, value) -> sb.append(key).append(" = ").append(value).append("\n"));
+        return sb.toString();
     }
 
 }

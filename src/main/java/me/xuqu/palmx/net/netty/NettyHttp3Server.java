@@ -10,6 +10,7 @@ import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3ServerConnectionHandler;
 import io.netty.incubator.codec.quic.*;
 import lombok.extern.slf4j.Slf4j;
+import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.net.AbstractPalmxServer;
 import me.xuqu.palmx.registry.ZookeeperUpdater;
 
@@ -46,8 +47,8 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
-                .initialMaxStreamsBidirectional(2000)  // 设置最大并发双向流数
-                .initialMaxStreamsUnidirectional(2000) // 设置最大并发单向流数
+                .initialMaxStreamsBidirectional(PalmxConfig.getInitialMaxStreamsBidirectional())  // 设置最大并发双向流数
+                .initialMaxStreamsUnidirectional(1000) // 设置最大并发单向流数
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {
                     @Override

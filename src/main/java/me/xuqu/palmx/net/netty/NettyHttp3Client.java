@@ -9,10 +9,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
-import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
-import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.incubator.codec.quic.*;
 import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
@@ -48,7 +45,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
         PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
-        log.debug("choose ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
+        log.debug("ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
         try {
             QuicStreamChannel quicStreamChannel = getQuicStreamChannel(socketAddress);
             Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();
@@ -74,7 +71,6 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 throw ((RpcInvocationException) promise.cause());
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("send error, msg = {}", e.getMessage());
             throw new RpcInvocationException("send error, msg = " + e.getMessage());
         }
@@ -99,6 +95,12 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         String hostname = socketAddress.getHostString();
         QuicChannel quicChannel = connectionCache.getIfPresent(hostname);
         if (quicChannel == null) {
+            quicChannel = getNewQuicChannel(socketAddress);
+        }
+        // 数量跟由服务端的 initialMaxStreamsBidirectional 配置
+        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
+        if (allowedStreams <= 0) {
+            log.info("allowed Stream is depleted，curr = {} ", allowedStreams);
             quicChannel = getNewQuicChannel(socketAddress);
         }
         QuicStreamChannel quicStreamChannel;

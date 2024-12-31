@@ -42,7 +42,6 @@ public class DefaultServiceLocator implements ServiceLocator {
                 try {
                     return CLIENT.sendAndExpect(rpcInvocation);
                 } catch (Exception e) {
-                    e.printStackTrace();
                     log.info("Remote call exception, err msg = {}", e.getMessage());
                     TimeUnit.SECONDS.sleep(2);
                 }
@@ -51,7 +50,7 @@ public class DefaultServiceLocator implements ServiceLocator {
             throw new RpcInvocationException("Remote call exception");
         });
 
-        log.info("RPC Client proxy create success, serializer is {}, load balancer is {}",
+        log.info("client create success, serializer is {}, load balancer is {}",
                 PalmxConfig.getSerializationType(), PalmxConfig.getLoadBalanceType());
 
         return proxyObject;
