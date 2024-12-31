@@ -16,7 +16,6 @@ public class CuratorFrameworkTests {
     public void connect() {
         CuratorFramework client = CuratorUtils.getClient();
         CuratorFramework client1 = CuratorUtils.getClient();
-
         Assertions.assertEquals(client1, client);
     }
 
