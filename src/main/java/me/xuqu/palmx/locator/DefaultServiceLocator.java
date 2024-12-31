@@ -55,4 +55,8 @@ public class DefaultServiceLocator implements ServiceLocator {
 
         return proxyObject;
     }
+
+    public void shutdown() {
+        CLIENT.shutdown();
+    }
 }

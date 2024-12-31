@@ -14,4 +14,9 @@ public abstract class AbstractPalmxClient implements PalmxClient {
     }
 
     protected abstract Object doSend(RpcMessage rpcMessage);
+
+    @Override
+    public void shutdown() {
+
+    }
 }

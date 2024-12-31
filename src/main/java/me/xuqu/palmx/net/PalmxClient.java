@@ -8,4 +8,7 @@ public interface PalmxClient {
      * @return 服务方法的执行结果
      */
     Object sendAndExpect(RpcInvocation rpcInvocation);
+
+
+    void shutdown();
 }

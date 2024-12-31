@@ -39,6 +39,11 @@ public class NettyHttp3Client extends AbstractPalmxClient {
     NioEventLoopGroup group = null;
 
     @Override
+    public void shutdown() {
+        group.shutdownGracefully();
+    }
+
+    @Override
     protected Object doSend(RpcMessage rpcMessage) {
         String serviceName = ((RpcInvocation) rpcMessage.getData()).getInterfaceName();
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
