@@ -6,7 +6,7 @@
 
 ### 配置文件
 
-在类路径下添加 `palmx.properties`，可以配置 Zookeeper 相关的连接信息、序列化方式、负载均衡算法、服务器端口号，具体如下所示：
+在类路径下添加 palmx.properties，可以配置 Zookeeper 相关的连接信息、序列化方式、负载均衡算法、服务器端口号，具体如下所示：
 
 ```Properties
 palmx.zookeeper.host=ubuntu.qaab8h9.wsl
@@ -115,7 +115,7 @@ git clone https://github.com/cosmoswei/palmx
 <dependency>
     <groupId>me.xuqu</groupId>
     <artifactId>palmx</artifactId>
-    <version>2.3-SNAPSHOT</version>
+    <version>2.4-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -180,14 +180,13 @@ public class PalmxService {
 
 除了 RPC 基础的能力之外，本项目的主要亮点是一些高级特性，这些高级特性在其它 RPC 框架稳定版本中是没有的，本项目对其进行的支持。
 
+![](https://raw.githubusercontent.com/cosmoswei/images/main/202501081628093.png)
 
-
-### 传输协议：quic
+### 传输协议：QUIC
 
 自从 2012 年 Google 前瞻性地提出 QUIC 传输协议，历经 10 年迭代，HTTP/3 凭借其对 QUIC 协议的深度整合以及从 TCP 向 UDP 的底层连接转型。截止到2022年11⽉，全球已有超过四分之⼀的网站部署了 HTTP/3 技术，如下图。⼀个崭新的⾼速、⾼效⽹络时代正逐步拉开帷幕。
 
 ![](https://raw.githubusercontent.com/cosmoswei/images/main/202411041618604.png)
-
 
 在当前的开源网络通信领域中，诸如 Netty、NGINX 以及 gRPC 等主流框架正竞相投入资源研发各的 HTTP/3 实现方案，HTTP/3 协议本⾝所蕴含的诸多优势不容忽视，例如摒弃队头阻塞问题、实现 0RTT 握手延迟、连接迁移等特性，这些都极大地提升了通信效率，将 HTTP/3 入 RPC 有助于构建出性能更卓越的应用系统。通过在 `palmx.properties` 配置文件中指定 palmx.load-balancer 属性可以指定程序的负载算法，比如：
 
@@ -195,7 +194,7 @@ public class PalmxService {
 palmx.quic-enable=ture
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[高效传输：以 quic 构建高效传输通道](https://cosmoswei.github.io/w442024-gao-xiao-chuan-shu-yi-quic-gou-jian-gao-xiao-chuan-shu-tong-dao/)，里面解释为什么要使用 quic 以及 quic  的最佳实践。
+关于这项技术的详细介绍，你可以参考这篇文章：[高效传输：以 quic 构建高效传输通道](https://cosmoswei.github.io/quic/)，里面解释为什么要使用 quic 以及 quic  的最佳实践。
 
 
 
@@ -207,7 +206,7 @@ palmx.quic-enable=ture
 palmx.io_uring-enable=ture
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[异步读写：窥见未来的系统调用---iouring](https://cosmoswei.github.io/w442024-yi-bu-du-xie-kui-jian-wei-lai-de-xi-tong-diao-yong-iouring/)，里面解释为什么要使用 io_uring 以及 io_uring 的最佳实践。
+关于这项技术的详细介绍，你可以参考这篇文章：[异步读写：窥见未来的系统调用——io_uring](https://cosmoswei.github.io/iouring/)，里面解释为什么要使用 io_uring 以及 io_uring 的最佳实践。
 
 
 
@@ -219,7 +218,7 @@ palmx.io_uring-enable=ture
 palmx.load-balancer=adaptive
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[双端流控：自适应的负载均衡与流量控制](https://cosmoswei.github.io/w442024-shuang-duan-liu-kong-zi-gua-ying-de-fu-zai-jun-heng-yu-liu-liang-kong-zhi/)，里面解释为什么要使用自适应负载均衡。
+关于这项技术的详细介绍，你可以参考这篇文章：[双端流控：自适应的负载均衡与流量控制](https://cosmoswei.github.io/adaptive/)，里面解释为什么要使用自适应负载均衡。
 
 
 
@@ -231,7 +230,7 @@ palmx.load-balancer=adaptive
 palmx.adaptive-flow-control-enable=true
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[双端流控：自适应的负载均衡与流量控制](https://cosmoswei.github.io/w442024-shuang-duan-liu-kong-zi-gua-ying-de-fu-zai-jun-heng-yu-liu-liang-kong-zhi/)，里面解释为什么要使用自适应流量控制及自适应流量控制的使用。
+关于这项技术的详细介绍，你可以参考这篇文章：[双端流控：自适应的负载均衡与流量控制](https://cosmoswei.github.io/adaptive/)，里面解释为什么要使用自适应流量控制及自适应流量控制的使用。
 
 
 
@@ -243,7 +242,7 @@ palmx.adaptive-flow-control-enable=true
 palmx.metric-qos-rule-path=drl/customMetric.drl
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[配置驱动：灵活的配置指标与评分体系](https://cosmoswei.github.io/w442024-pei-zhi-qu-dong-ling-huo-de-pei-zhi-zhi-biao-yu-ping-fen-ti-xi/)，里面解释为什么要使用 配置化评分体系以及配置化评分体系的最佳实践。
+关于这项技术的详细介绍，你可以参考这篇文章：[配置驱动：灵活的配置指标与评分体系](https://cosmoswei.github.io/rule-engine/)，里面解释为什么要使用 配置化评分体系以及配置化评分体系的最佳实践。
 
 
 
@@ -255,5 +254,6 @@ Java 在 JDK21 中正式推出了虚拟线程，它是一种轻量级线程，�
 palmx.virtual-thread-enable=true
 ```
 
-关于这项技术的详细介绍，你可以参考这篇文章：[超高并发：虚拟线程在 IO 中的机遇](https://cosmoswei.github.io/w442024-chao-gao-bing-fa-xu-ni-xian-cheng-zai-io-zhong-de-ji-yu/)，里面解释为什么要使用虚拟线程以及虚拟线程的最佳实践。
+关于这项技术的详细介绍，你可以参考这篇文章：[超高并发：虚拟线程在 IO 中的机遇](https://cosmoswei.github.io/virtual-thread/)，里面解释为什么要使用虚拟线程以及虚拟线程的最佳实践。
+
 
