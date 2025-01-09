@@ -48,7 +48,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
                 return palmxSocketAddress;
             }).collect(Collectors.toList());
             if (inetSocketAddresses.isEmpty()) {
-                throw new ServiceNotFoundException(serviceName);
+                throw new ServiceNotFoundException(serviceName + " no provider");
             }
             registryCache.put(serviceName, inetSocketAddresses);
             return inetSocketAddresses;

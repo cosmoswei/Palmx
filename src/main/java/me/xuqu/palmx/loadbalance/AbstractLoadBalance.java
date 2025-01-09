@@ -35,6 +35,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     @Override
     public PalmxSocketAddress choose(List<PalmxSocketAddress> socketAddressList, String serviceName) {
+        long start = System.currentTimeMillis();
         if (socketAddressList == null || socketAddressList.isEmpty()) {
             log.warn("No servers available for service: {}", serviceName);
             return null;
@@ -43,7 +44,8 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             return (socketAddressList.get(0).isAvailable()) ? socketAddressList.get(0) : null;
 
         PalmxSocketAddress socketAddress = doChoose(socketAddressList, serviceName);
-        log.debug("Choose a server[{}] for service[name = {}] with services = {}", JsonUtils.toJson(socketAddress), serviceName, socketAddressList);
+        long end = System.currentTimeMillis();
+        log.debug("Choose a server[{}] for service[name = {}] with services = {} ,time = {}", JsonUtils.toJson(socketAddress), serviceName, socketAddressList, end - start);
         return socketAddress;
     }
 

@@ -8,6 +8,7 @@ import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.netty.NettyClient;
 import me.xuqu.palmx.net.netty.NettyHttp3Client;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 public class DefaultServiceLocator implements ServiceLocator {
 
     private static PalmxClient CLIENT = null;
+
+    // 重试退避策略数组
+    static final int[] retryBackoffStrategy = {1, 2, 4, 8, 16, 32};
 
     @Override
     @SuppressWarnings("unchecked")
@@ -32,21 +36,17 @@ public class DefaultServiceLocator implements ServiceLocator {
                 }
             }
         }
+
         T proxyObject = (T) Proxy.newProxyInstance(classLoader, new Class[]{clazz}, (proxy, method, args) -> {
+            RpcInvocation rpcInvocation = buildRpcInvocation(clazz, method, args);
             for (int i = 0; i < 3; i++) {
-                RpcInvocation rpcInvocation = new RpcInvocation();
-                rpcInvocation.setInterfaceName(clazz.getName());
-                rpcInvocation.setMethodName(method.getName());
-                rpcInvocation.setParameterTypes(method.getParameterTypes());
-                rpcInvocation.setArguments(args);
                 try {
                     return CLIENT.sendAndExpect(rpcInvocation);
                 } catch (Exception e) {
                     log.info("Remote call exception, err msg = {}", e.getMessage());
-                    TimeUnit.SECONDS.sleep(2);
+                    TimeUnit.SECONDS.sleep(retryBackoffStrategy[i]);
                 }
             }
-
             throw new RpcInvocationException("Remote call exception");
         });
 
@@ -54,6 +54,15 @@ public class DefaultServiceLocator implements ServiceLocator {
                 PalmxConfig.getSerializationType(), PalmxConfig.getLoadBalanceType());
 
         return proxyObject;
+    }
+
+    private <T> RpcInvocation buildRpcInvocation(Class<T> clazz, Method method, Object[] args) {
+        RpcInvocation rpcInvocation = new RpcInvocation();
+        rpcInvocation.setInterfaceName(clazz.getName());
+        rpcInvocation.setMethodName(method.getName());
+        rpcInvocation.setParameterTypes(method.getParameterTypes());
+        rpcInvocation.setArguments(args);
+        return rpcInvocation;
     }
 
     public void shutdown() {

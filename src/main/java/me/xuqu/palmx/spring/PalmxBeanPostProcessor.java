@@ -59,7 +59,6 @@ public class PalmxBeanPostProcessor implements BeanPostProcessor, ApplicationCon
                 }
             }
         }
-
         return bean;
     }
 
