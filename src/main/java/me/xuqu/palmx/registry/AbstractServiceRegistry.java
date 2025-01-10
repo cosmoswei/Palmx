@@ -17,7 +17,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     @Resource
     private ApplicationContext applicationContext;
 
-    Cache<String, List<PalmxSocketAddress>> registryCache = Caffeine.newBuilder()
+   static Cache<String, List<PalmxSocketAddress>> registryCache = Caffeine.newBuilder()
             //过期时间
             .expireAfterWrite(1, TimeUnit.MINUTES)
             //最大容量

@@ -40,7 +40,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             .maximumSize(20)
             .build();
 
-    private NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
+    private final NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
 
     private Channel channel = null;
 
@@ -59,17 +59,22 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         log.debug("ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
         QuicStreamChannel quicStreamChannel;
         // 创建请求流
-        Future<QuicStreamChannel> future = getQuicStreamChannelFuture(socketAddress);
+        Future<QuicStreamChannel> quicStreamChannelFuture = getQuicStreamChannelFuture(socketAddress);
         // 发送信息
-        Http3HeadersFrame http3HeadersFrame = gethttp3HeadersFrame(socketAddress);
+        Http3HeadersFrame http3HeadersFrame = getHttp3HeadersFrame(socketAddress);
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
         try {
-            quicStreamChannel = future.sync().getNow();
+            quicStreamChannel = quicStreamChannelFuture.sync().getNow();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         quicStreamChannel.write(http3HeadersFrame);
-        quicStreamChannel.writeAndFlush(defaultHttp3DataFrame);
+        try {
+            quicStreamChannel.writeAndFlush(defaultHttp3DataFrame)
+                    .addListener(QuicStreamChannel.SHUTDOWN_OUTPUT).sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         DefaultPromise<Object> resPromise = new DefaultPromise<>(quicStreamChannel.eventLoop());
         Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
         try {
@@ -79,7 +84,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             if (resPromise.isSuccess()) {
                 Object result = resPromise.getNow();
                 log.debug("Send a packet[{}], get result = {}", rpcMessage, result);
-                future.getNow().closeFuture();
+                quicStreamChannel.closeFuture();
                 return result;
             } else {
                 throw resPromise.cause();
@@ -96,7 +101,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         // todo 处理异常
     }
 
-    private Http3HeadersFrame gethttp3HeadersFrame(PalmxSocketAddress socketAddress) {
+    private Http3HeadersFrame getHttp3HeadersFrame(PalmxSocketAddress socketAddress) {
         Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();
         frame.headers().method("POST").path("/")
                 .authority(socketAddress.toString())
@@ -140,7 +145,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         }
 
         // 无效连接
-        if (!quicChannel.isOpen()) {
+        if (!quicChannel.isActive()) {
             log.info("quicChannel isClosed");
             connectionCache.invalidate(hostname);
             quicChannel = newQuicChannel(socketAddress);
@@ -148,12 +153,13 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         }
 
         // 流数量限制，数量跟由服务端的 initialMaxStreamsBidirectional 配置
-        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
-        if (allowedStreams <= 0) {
-            connectionCache.invalidate(hostname);
-            quicChannel = newQuicChannel(socketAddress);
-            connectionCache.put(hostname, quicChannel);
-        }
+//        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
+//        if (allowedStreams <= 0) {
+//            // 流释放时，不会恢复（增加）
+//            connectionCache.invalidate(hostname);
+//            quicChannel = newQuicChannel(socketAddress);
+//            connectionCache.put(hostname, quicChannel);
+//        }
         return quicChannel;
     }
 
@@ -170,6 +176,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
+
                 .build();
         Bootstrap bs = new Bootstrap();
         try {

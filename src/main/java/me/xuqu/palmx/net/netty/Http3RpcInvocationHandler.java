@@ -28,7 +28,6 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
-//        log.info("this is head {}", ctx);
         ReferenceCountUtil.release(frame);
     }
 
@@ -53,7 +52,7 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
         ctx.write(getDefaultHttp3HeadersFrame(len));
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
         ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
-//        log.info("invoke Time = {}", System.currentTimeMillis() - start);
+//        log.info("duration Time = {}", System.currentTimeMillis() - start);
         ReferenceCountUtil.release(frame);
     }
 
@@ -68,6 +67,5 @@ public class Http3RpcInvocationHandler extends Http3RequestStreamInboundHandler 
     @Override
     protected void channelInputClosed(ChannelHandlerContext ctx) {
     }
-
 
 }
