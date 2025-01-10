@@ -11,9 +11,7 @@ import io.netty.incubator.codec.http3.*;
 import io.netty.incubator.codec.quic.*;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
-import me.xuqu.palmx.command.ClientChannelFuture;
 import me.xuqu.palmx.command.WriteQueue;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.exception.RpcInvocationException;
@@ -27,8 +25,8 @@ import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NettyHttp3Client extends AbstractPalmxClient {
@@ -42,7 +40,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             .maximumSize(20)
             .build();
 
-    private NioEventLoopGroup group = null;
+    private NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
 
     private Channel channel = null;
 
@@ -52,39 +50,46 @@ public class NettyHttp3Client extends AbstractPalmxClient {
     }
 
     @Override
-    protected ClientChannelFuture doSend(RpcMessage rpcMessage) {
+    protected Object doSend(RpcMessage rpcMessage) {
         String serviceName = ((RpcInvocation) rpcMessage.getData()).getInterfaceName();
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
         PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
         log.debug("ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
+        QuicStreamChannel quicStreamChannel;
+        // 创建请求流
+        Future<QuicStreamChannel> future = getQuicStreamChannelFuture(socketAddress);
+        // 发送信息
+        Http3HeadersFrame http3HeadersFrame = gethttp3HeadersFrame(socketAddress);
+        DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
         try {
-            DefaultPromise<Object> promise = new DefaultPromise<>(channel.eventLoop());
-            Future<QuicStreamChannel> future = getQuicStreamChannelFuture(socketAddress);
-            AtomicReference<ClientChannelFuture> res = new AtomicReference<>();
-            // 第一个阻塞
-            future.addListener((GenericFutureListener<Future<QuicStreamChannel>>) future1 -> {
-                if (!future1.isSuccess()) {
-                    transportException(future1.cause());
-                }
-                // 发送信息
-                Http3HeadersFrame http3HeadersFrame = gethttp3HeadersFrame(socketAddress);
-                DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
-                QuicStreamChannel quicStreamChannel = future1.getNow();
-                quicStreamChannel.write(http3HeadersFrame);
-                quicStreamChannel.writeAndFlush(defaultHttp3DataFrame);
-
-                // 返回的信息
-                Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), promise);
-                // 第二个阻塞
-                res.set(new ClientChannelFuture(promise, future1));
-            });
-            return res.get();
+            quicStreamChannel = future.sync().getNow();
         } catch (Exception e) {
-            log.error("send error, msg = {}", e.getMessage());
-            throw new RpcInvocationException("send error, msg = " + e.getMessage());
+            throw new RuntimeException(e);
         }
+        quicStreamChannel.write(http3HeadersFrame);
+        quicStreamChannel.writeAndFlush(defaultHttp3DataFrame);
+        DefaultPromise<Object> resPromise = new DefaultPromise<>(quicStreamChannel.eventLoop());
+        Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
+        try {
+            // 同步等待结果
+            resPromise.await();
+            // 取出结果
+            if (resPromise.isSuccess()) {
+                Object result = resPromise.getNow();
+                log.debug("Send a packet[{}], get result = {}", rpcMessage, result);
+                future.getNow().closeFuture();
+                return result;
+            } else {
+                throw resPromise.cause();
+            }
+        } catch (Throwable e) {
+            // 远程调用的过程出现了异常
+            log.warn("Method invocation failed, with exception");
+            throw new RpcInvocationException(e.getMessage());
+        }
+
     }
 
     private void transportException(Throwable cause) {
@@ -100,47 +105,59 @@ public class NettyHttp3Client extends AbstractPalmxClient {
     }
 
     private Future<QuicStreamChannel> getQuicStreamChannelFuture(InetSocketAddress socketAddress) {
-        String hostname = socketAddress.getHostString();
-        QuicChannel quicChannel = connectionCache.getIfPresent(hostname);
-        if (quicChannel == null || !quicChannel.isActive()) {
-            quicChannel = getNewQuicChannel(socketAddress);
-        }
-        // 数量跟由服务端的 initialMaxStreamsBidirectional 配置
-        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
-        if (allowedStreams <= 0) {
-            log.info("allowed Stream is depleted，curr = {} ", allowedStreams);
-            quicChannel = getNewQuicChannel(socketAddress);
-        }
+        QuicChannel quicChannel = getQuicChannel(socketAddress);
         try {
             return Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler());
         } catch (Exception e) {
             log.error("get quic stream channel error, msg = {}", e.getMessage());
-            connectionCache.invalidate(hostname);
+            connectionCache.invalidate(socketAddress.getHostString());
             return getQuicStreamChannelFuture(socketAddress);
         }
     }
 
 
-    private QuicChannel getNewQuicChannel(InetSocketAddress socketAddress) {
-        String hostname = socketAddress.getHostString();
+    private QuicChannel newQuicChannel(InetSocketAddress socketAddress) {
         QuicChannel quicChannel;
         try {
-            if (this.group == null) {
-                group = new NioEventLoopGroup(PalmxConfig.ioThreads());
-            }
             quicChannel = QuicChannel.newBootstrap(getChannel())
                     .handler(new Http3ClientConnectionHandler())
                     .remoteAddress(socketAddress)
-                    .connect()
-                    .get();
-        } catch (Exception e) {
+                    .connect().get();
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
-        connectionCache.put(hostname, quicChannel);
         return quicChannel;
     }
 
-    private Channel getChannel() throws InterruptedException {
+    private QuicChannel getQuicChannel(InetSocketAddress socketAddress) {
+        String hostname = socketAddress.getHostString();
+        QuicChannel quicChannel = connectionCache.getIfPresent(hostname);
+        // 去缓冲里查找
+        if (null == quicChannel) {
+            quicChannel = newQuicChannel(socketAddress);
+            connectionCache.put(hostname, quicChannel);
+            return quicChannel;
+        }
+
+        // 无效连接
+        if (!quicChannel.isOpen()) {
+            log.info("quicChannel isClosed");
+            connectionCache.invalidate(hostname);
+            quicChannel = newQuicChannel(socketAddress);
+            connectionCache.put(hostname, quicChannel);
+        }
+
+        // 流数量限制，数量跟由服务端的 initialMaxStreamsBidirectional 配置
+        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
+        if (allowedStreams <= 0) {
+            connectionCache.invalidate(hostname);
+            quicChannel = newQuicChannel(socketAddress);
+            connectionCache.put(hostname, quicChannel);
+        }
+        return quicChannel;
+    }
+
+    private Channel getChannel() {
         if (null != channel) {
             return channel;
         }
@@ -149,18 +166,20 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
         ChannelHandler channelHandler = Http3.newQuicClientCodecBuilder()
                 .sslContext(context)
-                .maxIdleTimeout(500000, TimeUnit.MILLISECONDS)
+                .maxIdleTimeout(5000, TimeUnit.MILLISECONDS)
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
-                .initialMaxStreamsBidirectional(PalmxConfig.getInitialMaxStreamsBidirectional())  // 设置最大并发双向流数
-                .initialMaxStreamsUnidirectional(200) // 设置最大并发单向流数
                 .build();
         Bootstrap bs = new Bootstrap();
-        channel = bs.group(group)
-                .channel(DatagramChannelHandler.getChannelClass())
-                .handler(channelHandler)
-                .bind(0).sync().channel();
+        try {
+            channel = bs.group(group)
+                    .channel(DatagramChannelHandler.getChannelClass())
+                    .handler(channelHandler)
+                    .bind(0).sync().channel();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return channel;
 
     }

@@ -31,7 +31,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
     @Override
     protected void doStart() {
         ZookeeperUpdater.startUpdating();
-        NioEventLoopGroup group = new NioEventLoopGroup(1);
+        NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
         SelfSignedCertificate cert = null;
         try {
             cert = new SelfSignedCertificate();
@@ -40,15 +40,14 @@ public class NettyHttp3Server extends AbstractPalmxServer {
         }
         QuicSslContext sslContext = QuicSslContextBuilder.forServer(cert.key(), null, cert.cert())
                 .applicationProtocols(Http3.supportedApplicationProtocols()).build();
+
         ChannelHandler channelHandler = Http3.newQuicServerCodecBuilder()
                 .sslContext(sslContext)
-                .maxIdleTimeout(500000, TimeUnit.MILLISECONDS)
-                .initialMaxData(10000000)
+                .maxIdleTimeout(5000, TimeUnit.MILLISECONDS)
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
                 .initialMaxStreamsBidirectional(PalmxConfig.getInitialMaxStreamsBidirectional())  // 设置最大并发双向流数
-                .initialMaxStreamsUnidirectional(1000) // 设置最大并发单向流数
                 .tokenHandler(InsecureQuicTokenHandler.INSTANCE)
                 .handler(new ChannelInitializer<QuicChannel>() {
                     @Override
