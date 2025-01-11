@@ -1,4 +1,4 @@
-package me.xuqu.palmx.net.netty;
+package me.xuqu.palmx.net;
 
 import io.netty.channel.Channel;
 import io.netty.channel.socket.nio.NioDatagramChannel;

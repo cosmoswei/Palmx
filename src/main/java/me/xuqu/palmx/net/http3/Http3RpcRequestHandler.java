@@ -1,4 +1,4 @@
-package me.xuqu.palmx.net.netty;
+package me.xuqu.palmx.net.http3;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

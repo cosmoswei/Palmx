@@ -1,4 +1,4 @@
-package me.xuqu.palmx.net.netty;
+package me.xuqu.palmx.net.command;
 
 import java.util.concurrent.CompletableFuture;
 

@@ -1,4 +1,4 @@
-package me.xuqu.palmx.net.netty;
+package me.xuqu.palmx.net.http3;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.incubator.codec.http3.Http3DataFrame;

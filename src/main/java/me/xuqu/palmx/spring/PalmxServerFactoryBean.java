@@ -3,7 +3,7 @@ package me.xuqu.palmx.spring;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.net.PalmxServer;
-import me.xuqu.palmx.net.netty.NettyHttp3Server;
+import me.xuqu.palmx.net.http3.NettyHttp3Server;
 import me.xuqu.palmx.net.netty.NettyServer;
 import org.springframework.beans.factory.FactoryBean;
 
