@@ -6,8 +6,8 @@ import java.io.Serializable;
 
 @Data
 public class RpcResponse implements Serializable {
+    private transient int sequenceId;
     private byte status;
     private Object data;
     private String message;
-    private transient int sequenceId;
 }

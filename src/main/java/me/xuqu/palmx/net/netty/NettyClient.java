@@ -15,8 +15,8 @@ import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
-import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.registry.ServiceRegistry;
 import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
@@ -33,7 +33,7 @@ public class NettyClient extends AbstractPalmxClient {
 
     @Override
     protected Object doSend(RpcMessage rpcMessage) {
-        String serviceName = ((RpcInvocation) rpcMessage.getData()).getInterfaceName();
+        String serviceName = ((RpcRequest) rpcMessage.getData()).getInterfaceName();
 
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
@@ -64,9 +64,8 @@ public class NettyClient extends AbstractPalmxClient {
         } catch (InterruptedException e) {
             // 远程调用的过程出现了异常
             log.error("Remote call exception", e);
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**

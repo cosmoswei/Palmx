@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.util.SequenceIdGenerator;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ public class MessageCodecTests {
             new MessageCodec()
     );
 
-    private static final RpcInvocation RPC_INVOCATION = new RpcInvocation();
+    private static final RpcRequest RPC_INVOCATION = new RpcRequest();
     private static final RpcMessage RPC_MESSAGE;
 
     static {

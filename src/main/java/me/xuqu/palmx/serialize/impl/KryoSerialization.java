@@ -4,7 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import lombok.extern.slf4j.Slf4j;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.serialize.Serialization;
 
 import java.io.ByteArrayInputStream;
@@ -16,7 +16,7 @@ public class KryoSerialization implements Serialization {
 
     private final ThreadLocal<Kryo> kryoThreadLocal = ThreadLocal.withInitial(() -> {
         Kryo kryo = new Kryo();
-        kryo.register(RpcInvocation.class);
+        kryo.register(RpcRequest.class);
         kryo.register(Object[].class);
         kryo.register(Class[].class);
         kryo.register(Class.class);

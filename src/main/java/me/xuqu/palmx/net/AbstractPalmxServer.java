@@ -3,23 +3,16 @@ package me.xuqu.palmx.net;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import me.xuqu.palmx.util.HostUtils;
 
 @Slf4j
 public abstract class AbstractPalmxServer implements PalmxServer {
 
     protected PalmxSocketAddress inetSocketAddress;
-    protected String host = "127.0.0.1";
-    protected int port = PalmxConfig.getPalmxServerPort();
+    protected String host = HostUtils.getLocalAddr();
+    protected int port = HostUtils.getLocalPort();
 
     public AbstractPalmxServer() {
-        try {
-            host = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
     public AbstractPalmxServer(int port) {
@@ -30,9 +23,8 @@ public abstract class AbstractPalmxServer implements PalmxServer {
     @Override
     public void start() {
         inetSocketAddress = new PalmxSocketAddress(host, port);
-        log.info("config = {}", PalmxConfig.list());
+        log.info("config = \n{}", PalmxConfig.list());
         doStart();
-        // 启动更新ZK线程
     }
 
     @Override

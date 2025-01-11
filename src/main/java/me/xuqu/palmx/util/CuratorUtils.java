@@ -67,8 +67,8 @@ public class CuratorUtils {
             int serializationType = PalmxConfig.getSerializationType().ordinal();
             RegistryDTO registryDTO = new RegistryDTO();
             registryDTO.setProtocol("http3");
-            registryDTO.setHost(serviceAddress);
-            registryDTO.setPort(8080);
+            registryDTO.setHost(HostUtils.getLocalAddr());
+            registryDTO.setPort(HostUtils.getLocalPort());
             registryDTO.setServiceName(serviceName);
             // 获取本地的数据指标对象
             int localQoSLevel = QoSHandler.getLocalQoSLevel();
@@ -137,7 +137,7 @@ public class CuratorUtils {
             List<RegistryDTO> services = new ArrayList<>();
             List<String> allChildren = getClient().getChildren().forPath(nodePath);
             for (String child : allChildren) {
-                String childPath =  nodePath + "/" + child;
+                String childPath = nodePath + "/" + child;
                 RegistryDTO data = getData(getClient(), childPath, RegistryDTO.class);
                 // 处理子节点数据（打印、存储等）
                 services.add(data);

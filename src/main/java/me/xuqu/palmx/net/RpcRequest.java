@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class RpcInvocation implements Serializable {
+public class RpcRequest implements Serializable {
     private String interfaceName;
     private String methodName;
     private Class<?>[] parameterTypes;

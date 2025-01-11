@@ -3,12 +3,11 @@ package me.xuqu.palmx.registry;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.qos.QoSHandler;
 import me.xuqu.palmx.util.CuratorUtils;
+import me.xuqu.palmx.util.HostUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -28,14 +27,9 @@ public class ZookeeperUpdater {
         // 获取所以服务
         Set<String> services = ServiceRegistry.services;
 
-        String hostAddress;
-        try {
-            hostAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+        if (!PalmxConfig.getMetricQoSEnable()) {
+            return;
         }
-        int palmxServerPort = PalmxConfig.getPalmxServerPort();
-        String serviceAddress = String.format("%s:%d", hostAddress, palmxServerPort);
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 int localQoSLevel = QoSHandler.getLocalQoSLevel();
@@ -43,19 +37,20 @@ public class ZookeeperUpdater {
                 for (String service : services) {
                     log.info("正在更新当前主机的节点信息 当前服务 service = {}", service);
                     // 根据服务获取节点内容
-                    // 构建注册节点对象
+                    String localAddr = HostUtils.getLocalAddr();
+                    int localPort = HostUtils.getLocalPort();
                     int serializationType = PalmxConfig.getSerializationType().ordinal();
                     RegistryDTO registryDTO = new RegistryDTO();
                     registryDTO.setProtocol("http3");
-                    registryDTO.setHost(hostAddress);
-                    registryDTO.setPort(palmxServerPort);
+                    registryDTO.setHost(localAddr);
+                    registryDTO.setPort(localPort);
                     registryDTO.setServiceName(service);
                     // 获取本地的数据指标对象
                     registryDTO.setQoSLevel(localQoSLevel);
                     registryDTO.setTmRefresh(new Date());
                     byte[] registryDTOByte = serialize((byte) serializationType, registryDTO);
                     // 得到更新QoS与刷新时间
-
+                    String serviceAddress = String.format("%s:%d", localAddr, localPort);
                     String s = CuratorUtils.buildNodePath(service, serviceAddress);
                     updateZNode(s, registryDTOByte);
                 }

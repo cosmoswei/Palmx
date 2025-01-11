@@ -1,6 +1,6 @@
 package me.xuqu.palmx.serialize;
 
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class SerializationTests {
 
-    public static final RpcInvocation RPC_INVOCATION = new RpcInvocation();
+    public static final RpcRequest RPC_INVOCATION = new RpcRequest();
 
     static {
         RPC_INVOCATION.setInterfaceName("me.xuqu.service.FooService");
@@ -44,13 +44,13 @@ public class SerializationTests {
         byte[] bytes = serialization.serialize(RPC_INVOCATION);
         Assertions.assertNotEquals(0, bytes.length);
 
-        RpcInvocation rpcInvocation = serialization.deserialize(RpcInvocation.class, bytes);
+        RpcRequest rpcRequest = serialization.deserialize(RpcRequest.class, bytes);
 
-        Assertions.assertTrue(Arrays.deepEquals(rpcInvocation.getArguments(), RPC_INVOCATION.getArguments()));
-        Assertions.assertTrue(Arrays.deepEquals(rpcInvocation.getParameterTypes(), RPC_INVOCATION.getParameterTypes()));
-        Assertions.assertEquals(rpcInvocation.getMethodName(), RPC_INVOCATION.getMethodName());
-        Assertions.assertEquals(rpcInvocation.getInterfaceName(), RPC_INVOCATION.getInterfaceName());
-        Assertions.assertEquals(0, rpcInvocation.getSequenceId());
+        Assertions.assertTrue(Arrays.deepEquals(rpcRequest.getArguments(), RPC_INVOCATION.getArguments()));
+        Assertions.assertTrue(Arrays.deepEquals(rpcRequest.getParameterTypes(), RPC_INVOCATION.getParameterTypes()));
+        Assertions.assertEquals(rpcRequest.getMethodName(), RPC_INVOCATION.getMethodName());
+        Assertions.assertEquals(rpcRequest.getInterfaceName(), RPC_INVOCATION.getInterfaceName());
+        Assertions.assertEquals(0, rpcRequest.getSequenceId());
     }
 
 }

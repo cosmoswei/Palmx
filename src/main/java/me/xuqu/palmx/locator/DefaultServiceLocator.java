@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.net.PalmxClient;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.net.netty.NettyClient;
 import me.xuqu.palmx.net.netty.NettyHttp3Client;
 
@@ -36,12 +36,11 @@ public class DefaultServiceLocator implements ServiceLocator {
                 }
             }
         }
-
         T proxyObject = (T) Proxy.newProxyInstance(classLoader, new Class[]{clazz}, (proxy, method, args) -> {
-            RpcInvocation rpcInvocation = buildRpcInvocation(clazz, method, args);
+            RpcRequest rpcRequest = buildRpcInvocation(clazz, method, args);
             for (int i = 0; i < 3; i++) {
                 try {
-                    return CLIENT.sendAndExpect(rpcInvocation);
+                    return CLIENT.sendAndExpect(rpcRequest);
                 } catch (Exception e) {
                     log.info("Remote call exception, err msg = {}", e.getMessage());
                     TimeUnit.SECONDS.sleep(retryBackoffStrategy[i]);
@@ -56,13 +55,13 @@ public class DefaultServiceLocator implements ServiceLocator {
         return proxyObject;
     }
 
-    private <T> RpcInvocation buildRpcInvocation(Class<T> clazz, Method method, Object[] args) {
-        RpcInvocation rpcInvocation = new RpcInvocation();
-        rpcInvocation.setInterfaceName(clazz.getName());
-        rpcInvocation.setMethodName(method.getName());
-        rpcInvocation.setParameterTypes(method.getParameterTypes());
-        rpcInvocation.setArguments(args);
-        return rpcInvocation;
+    private <T> RpcRequest buildRpcInvocation(Class<T> clazz, Method method, Object[] args) {
+        RpcRequest rpcRequest = new RpcRequest();
+        rpcRequest.setInterfaceName(clazz.getName());
+        rpcRequest.setMethodName(method.getName());
+        rpcRequest.setParameterTypes(method.getParameterTypes());
+        rpcRequest.setArguments(args);
+        return rpcRequest;
     }
 
     public void shutdown() {

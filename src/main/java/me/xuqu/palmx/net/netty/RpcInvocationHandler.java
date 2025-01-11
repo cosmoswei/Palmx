@@ -4,7 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConstants;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 import me.xuqu.palmx.provider.DefaultServiceProvider;
@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @Slf4j
-public class RpcInvocationHandler extends SimpleChannelInboundHandler<RpcInvocation> {
+public class RpcInvocationHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -22,13 +22,13 @@ public class RpcInvocationHandler extends SimpleChannelInboundHandler<RpcInvocat
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcInvocation rpcInvocation) {
-        String serviceName = rpcInvocation.getInterfaceName();
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcRequest rpcRequest) {
+        String serviceName = rpcRequest.getInterfaceName();
         Object service = DefaultServiceProvider.getInstance().getService(serviceName);
 
         // 先初始化响应对象方便后面封装数据
         RpcResponse rpcResponse = new RpcResponse();
-        rpcResponse.setSequenceId(rpcInvocation.getSequenceId());
+        rpcResponse.setSequenceId(rpcRequest.getSequenceId());
         RpcMessage rpcMessage = new RpcMessage(rpcResponse.getSequenceId(), rpcResponse);
         rpcMessage.setMessageType(PalmxConstants.NETTY_RPC_RESPONSE_MESSAGE);
 
@@ -45,9 +45,9 @@ public class RpcInvocationHandler extends SimpleChannelInboundHandler<RpcInvocat
         log.debug("Get service[{}] implementation, {}", serviceName, service);
 
         // 获取方法执行的信息
-        String methodName = rpcInvocation.getMethodName();
-        Class<?>[] paramTypes = rpcInvocation.getParameterTypes();
-        Object[] arguments = rpcInvocation.getArguments();
+        String methodName = rpcRequest.getMethodName();
+        Class<?>[] paramTypes = rpcRequest.getParameterTypes();
+        Object[] arguments = rpcRequest.getArguments();
 
 
         try {

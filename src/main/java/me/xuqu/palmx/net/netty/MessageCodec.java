@@ -6,13 +6,13 @@ import io.netty.handler.codec.ByteToMessageCodec;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConstants;
 import me.xuqu.palmx.exception.PalmxException;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 
 import java.util.List;
 
-import static me.xuqu.palmx.common.PalmxConstants.NETTY_RPC_INVOCATION_MESSAGE;
+import static me.xuqu.palmx.common.PalmxConstants.NETTY_RPC_REQUEST_MESSAGE;
 import static me.xuqu.palmx.common.PalmxConstants.NETTY_RPC_RESPONSE_MESSAGE;
 import static me.xuqu.palmx.serialize.Serialization.deserialize;
 import static me.xuqu.palmx.serialize.Serialization.serialize;
@@ -51,10 +51,10 @@ public class MessageCodec extends ByteToMessageCodec<RpcMessage> {
         int length = byteBuf.readInt();
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes, 0, length);
-        if (messageType == NETTY_RPC_INVOCATION_MESSAGE) {
-            RpcInvocation rpcInvocation = deserialize(serializedType, RpcInvocation.class, bytes);
-            rpcInvocation.setSequenceId(sequenceId);
-            list.add(rpcInvocation);
+        if (messageType == NETTY_RPC_REQUEST_MESSAGE) {
+            RpcRequest rpcRequest = deserialize(serializedType, RpcRequest.class, bytes);
+            rpcRequest.setSequenceId(sequenceId);
+            list.add(rpcRequest);
         } else if (messageType == NETTY_RPC_RESPONSE_MESSAGE) {
             RpcResponse rpcResponse = deserialize(serializedType, RpcResponse.class, bytes);
             rpcResponse.setSequenceId(sequenceId);

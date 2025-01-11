@@ -8,7 +8,10 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
-import io.netty.incubator.codec.quic.*;
+import io.netty.incubator.codec.quic.QuicChannel;
+import io.netty.incubator.codec.quic.QuicSslContext;
+import io.netty.incubator.codec.quic.QuicSslContextBuilder;
+import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +21,8 @@ import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
-import me.xuqu.palmx.net.RpcInvocation;
 import me.xuqu.palmx.net.RpcMessage;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.registry.ServiceRegistry;
 import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
@@ -30,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class NettyHttp3Client extends AbstractPalmxClient {
-
-    private final WriteQueue writeQueue = new WriteQueue(256);
 
     private final Cache<String, QuicChannel> connectionCache = Caffeine.newBuilder()
             //过期时间
@@ -51,7 +52,8 @@ public class NettyHttp3Client extends AbstractPalmxClient {
 
     @Override
     protected Object doSend(RpcMessage rpcMessage) {
-        String serviceName = ((RpcInvocation) rpcMessage.getData()).getInterfaceName();
+
+        String serviceName = ((RpcRequest) rpcMessage.getData()).getInterfaceName();
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
         // load balance
@@ -60,6 +62,9 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         QuicStreamChannel quicStreamChannel;
         // 创建请求流
         Future<QuicStreamChannel> quicStreamChannelFuture = getQuicStreamChannelFuture(socketAddress);
+        DefaultPromise<Object> resPromise = new DefaultPromise<>(channel.eventLoop());
+        // 一定要在请求返回写入 resPromise 前设置，不然会报错。
+        Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
         // 发送信息
         Http3HeadersFrame http3HeadersFrame = getHttp3HeadersFrame(socketAddress);
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
@@ -75,11 +80,10 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        DefaultPromise<Object> resPromise = new DefaultPromise<>(quicStreamChannel.eventLoop());
-        Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
+
         try {
             // 同步等待结果
-            resPromise.await();
+            resPromise.sync().get();
             // 取出结果
             if (resPromise.isSuccess()) {
                 Object result = resPromise.getNow();
@@ -94,6 +98,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             log.warn("Method invocation failed, with exception");
             throw new RpcInvocationException(e.getMessage());
         }
+
 
     }
 

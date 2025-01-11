@@ -15,8 +15,10 @@ public class PalmxConstants {
         static final String QUIC_ENABLE = PREFIX + ".quic-enable";
         static final String IO_URING_ENABLE = PREFIX + ".io_uring-enable";
         static final String QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL = PREFIX + ".quic.initialMaxStreamsBidirectional";
+        static final String METRIC_QOS_ENABLE = PREFIX + ".metric-qos-enable";
         static final String METRIC_QOS_RULE_PATH = PREFIX + ".metric-qos-rule-path";
         static final String ADAPTIVE_FLOW_CONTROL_ENABLE = PREFIX + ".adaptive-flow-control-enable";
+        static final String FLOW_CONTROL_ENABLE = PREFIX + ".flow-control-enable";
     }
 
     public static final String DEFAULT_ZOOKEEPER_ADDRESS = "127.0.0.1:8121";
@@ -34,7 +36,7 @@ public class PalmxConstants {
     public static final int NETTY_MESSAGE_MAGIC_NUMBER = 0x1A1A;
     public static final byte NETTY_MESSAGE_VERSION = 1;
 
-    public static final byte NETTY_RPC_INVOCATION_MESSAGE = 0;
+    public static final byte NETTY_RPC_REQUEST_MESSAGE = 0;
     public static final byte NETTY_RPC_RESPONSE_MESSAGE = 1;
 
     public static final byte NETTY_RPC_RESPONSE_STATUS_OK = 1;

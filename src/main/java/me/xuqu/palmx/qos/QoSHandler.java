@@ -3,6 +3,7 @@ package me.xuqu.palmx.qos;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
+import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.metric.MetricsHolder;
 import me.xuqu.palmx.metric.pojo.Metrics;
 import me.xuqu.palmx.rule.Metric2QoSRule;
@@ -30,7 +31,11 @@ public class QoSHandler {
     }
 
     public static int getLocalQoSLevel() {
-        //
+
+        if (!PalmxConfig.getMetricQoSEnable()) {
+            return 100;
+        }
+
         Metrics localeMetrics = MetricsHolder.getLocalMetrics();
         log.info("localMetrics is [{}]", JsonUtils.toJson(localeMetrics));
         int qoSLevel = getQoSLevel(localeMetrics);

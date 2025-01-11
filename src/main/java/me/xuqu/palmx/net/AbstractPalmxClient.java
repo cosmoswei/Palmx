@@ -7,9 +7,9 @@ import me.xuqu.palmx.util.SequenceIdGenerator;
 @Slf4j
 public abstract class AbstractPalmxClient implements PalmxClient {
     @Override
-    public Object sendAndExpect(RpcInvocation rpcInvocation) {
-        RpcMessage rpcMessage = new RpcMessage(SequenceIdGenerator.nextId(), rpcInvocation);
-        rpcMessage.setMessageType(PalmxConstants.NETTY_RPC_INVOCATION_MESSAGE);
+    public Object sendAndExpect(RpcRequest rpcRequest) {
+        RpcMessage rpcMessage = new RpcMessage(SequenceIdGenerator.nextId(), rpcRequest);
+        rpcMessage.setMessageType(PalmxConstants.NETTY_RPC_REQUEST_MESSAGE);
         return doSend(rpcMessage);
     }
 

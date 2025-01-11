@@ -2,6 +2,7 @@ package me.xuqu.palmx.flowcontrol;
 
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.FlowControlType;
+import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.flowcontrol.impl.CounterFlowControl;
 import me.xuqu.palmx.flowcontrol.impl.LeakBucketFlowControl;
 import me.xuqu.palmx.flowcontrol.impl.SlidingWindowFlowControl;
@@ -41,6 +42,12 @@ public class FlowControlHolder {
     }
 
     public static boolean control(FlowControlReq flowControlReq) {
+
+        // 是否开启流控，默认不开启，返回不限流
+        if (!PalmxConfig.getFlowControlEnable()) {
+            return false;
+        }
+
         FlowControl flowControl = flowControlMap.get(flowControlReq.getFlowControlKey());
         if (flowControl == null) {
             log.error("flowControl is null, pass this control, flowControlMetadata = {},", flowControlReq);

@@ -76,6 +76,8 @@ public class PalmxConfig {
         return "ture".equals(property) || "Ture".equals(property);
     }
 
+
+
     public static int getInitialMaxStreamsBidirectional() {
         String property = getProperty(PropertyKey.QUIC_INITIAL_MAX_STREAMS_BIDIRECTIONAL);
         return property == null ? DEFAULT_INITIAL_MAX_STREAMS_BIDIRECTIONAL : Integer.parseInt(property);
@@ -92,9 +94,19 @@ public class PalmxConfig {
         return property == null ? DEFAULT_METRIC_QOS_RULE_PATH : property;
     }
 
+    public static boolean getMetricQoSEnable() {
+        String property = getProperty(PropertyKey.METRIC_QOS_ENABLE);
+        return "ture".equals(property) || "Ture".equals(property);
+    }
 
     public static boolean getAdaptiveFlowControlEnable() {
         String property = getProperty(PropertyKey.ADAPTIVE_FLOW_CONTROL_ENABLE);
+        return "ture".equals(property) || "Ture".equals(property);
+    }
+
+
+    public static boolean getFlowControlEnable() {
+        String property = getProperty(PropertyKey.FLOW_CONTROL_ENABLE);
         return "ture".equals(property) || "Ture".equals(property);
     }
 

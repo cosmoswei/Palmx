@@ -1,7 +1,7 @@
 package me.xuqu.palmx.invoke;
 
 import me.xuqu.palmx.common.PalmxConstants;
-import me.xuqu.palmx.net.RpcInvocation;
+import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.net.RpcResponse;
 import me.xuqu.palmx.provider.DefaultServiceProvider;
 
@@ -14,10 +14,10 @@ public class InvokeHandler {
     private InvokeHandler() {
     }
 
-    public static RpcResponse doInvoke(RpcInvocation rpcInvocation) {
+    public static RpcResponse doInvoke(RpcRequest rpcRequest) {
         RpcResponse rpcResponse = new RpcResponse();
-        rpcResponse.setSequenceId(rpcInvocation.getSequenceId());
-        String serviceName = rpcInvocation.getInterfaceName();
+        rpcResponse.setSequenceId(rpcRequest.getSequenceId());
+        String serviceName = rpcRequest.getInterfaceName();
         Object service = DefaultServiceProvider.getInstance().getService(serviceName);
         // 如果未找到直接返回空
         if (service == null) {
@@ -26,9 +26,9 @@ public class InvokeHandler {
             return rpcResponse;
         }
         // 获取方法执行的信息
-        String methodName = rpcInvocation.getMethodName();
-        Class<?>[] paramTypes = rpcInvocation.getParameterTypes();
-        Object[] arguments = rpcInvocation.getArguments();
+        String methodName = rpcRequest.getMethodName();
+        Class<?>[] paramTypes = rpcRequest.getParameterTypes();
+        Object[] arguments = rpcRequest.getArguments();
         try {
             // 反射执行具体的方法
             Method method = service.getClass().getMethod(methodName, paramTypes);

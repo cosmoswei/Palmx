@@ -9,6 +9,7 @@ import io.netty.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConstants;
 import me.xuqu.palmx.exception.RpcInvocationException;
+import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcResponse;
 
 import java.util.Map;
@@ -21,8 +22,8 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Caught a exception", cause);
-        ctx.close().syncUninterruptibly();
+        log.error("Caught a exception, msg = {}", cause.getMessage());
+        throw new RpcInvocationException("Caught a exception", cause);
     }
 
 
@@ -35,7 +36,8 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-        RpcResponse rpcResponse = MessageCodecHelper.decodeResponse(frame.content());
+        RpcMessage rpcMessage = MessageCodecHelper.decode(frame.content());
+        RpcResponse rpcResponse = (RpcResponse) rpcMessage.getData();
         // 从缓存中移除该序列号的 Promise
         Promise<Object> promise = map.remove(rpcResponse.getSequenceId());
         if (promise != null) {
@@ -44,6 +46,9 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
             } else {
                 promise.setFailure(new RpcInvocationException(rpcResponse.getMessage()));
             }
+        } else {
+            log.error("fail return, can't find sequenceId");
+            throw new RpcInvocationException("fail return, can't find sequenceId");
         }
         ReferenceCountUtil.release(frame);
     }

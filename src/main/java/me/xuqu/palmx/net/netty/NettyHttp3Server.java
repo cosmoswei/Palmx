@@ -32,7 +32,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
     protected void doStart() {
         ZookeeperUpdater.startUpdating();
         NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
-        SelfSignedCertificate cert = null;
+        SelfSignedCertificate cert;
         try {
             cert = new SelfSignedCertificate();
         } catch (CertificateException e) {
@@ -57,7 +57,7 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                                 new ChannelInitializer<QuicStreamChannel>() {
                                     @Override
                                     protected void initChannel(QuicStreamChannel ch) {
-                                        ch.pipeline().addLast(new Http3RpcInvocationHandler() {
+                                        ch.pipeline().addLast(new Http3RpcRequestHandler() {
                                         });
                                     }
                                 }));

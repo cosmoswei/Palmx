@@ -1,5 +1,6 @@
 package me.xuqu.palmx.spring;
 
+import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.flowcontrol.FlowControlHolder;
 import me.xuqu.palmx.flowcontrol.FlowControlMetadata;
 import me.xuqu.palmx.locator.DefaultServiceLocator;
@@ -19,6 +20,7 @@ import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 
 @Component
+@Slf4j
 public class PalmxBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 
     private final static ServiceLocator serviceLocator = new DefaultServiceLocator();

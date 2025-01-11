@@ -5,7 +5,6 @@ import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.net.PalmxServer;
 import me.xuqu.palmx.net.netty.NettyHttp3Server;
 import me.xuqu.palmx.net.netty.NettyServer;
-import me.xuqu.palmx.registry.ZookeeperUpdater;
 import org.springframework.beans.factory.FactoryBean;
 
 @Slf4j
@@ -14,8 +13,7 @@ public class PalmxServerFactoryBean implements FactoryBean<PalmxServer> {
     @Override
     public PalmxServer getObject() {
         PalmxServer server;
-        boolean enableQuic = PalmxConfig.getQuicEnable();
-        if (!enableQuic) {
+        if (!PalmxConfig.getQuicEnable()) {
             server = new NettyServer();
         } else {
             server = new NettyHttp3Server();
