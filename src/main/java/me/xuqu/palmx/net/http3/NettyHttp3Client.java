@@ -5,6 +5,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
@@ -12,24 +14,25 @@ import io.netty.incubator.codec.quic.QuicChannel;
 import io.netty.incubator.codec.quic.QuicSslContext;
 import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
-import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
+import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcRequest;
-import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.registry.ServiceRegistry;
 import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NettyHttp3Client extends AbstractPalmxClient {
@@ -52,54 +55,73 @@ public class NettyHttp3Client extends AbstractPalmxClient {
 
     @Override
     protected Object doSend(RpcMessage rpcMessage) {
+        CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
 
         String serviceName = ((RpcRequest) rpcMessage.getData()).getInterfaceName();
         ServiceRegistry serviceRegistry = new ZookeeperServiceRegistry();
         List<PalmxSocketAddress> socketAddresses = serviceRegistry.lookup(serviceName);
+
         // load balance
         PalmxSocketAddress socketAddress = LoadBalanceHolder.get().choose(socketAddresses, serviceName);
         log.debug("ip =  {}'s QoS is {}", socketAddress.getAddress(), socketAddress.getQoSLevel());
-        QuicStreamChannel quicStreamChannel;
-        // 创建请求流
+
+        // 获取请求流
         Future<QuicStreamChannel> quicStreamChannelFuture = getQuicStreamChannelFuture(socketAddress);
         DefaultPromise<Object> resPromise = new DefaultPromise<>(channel.eventLoop());
-        // 一定要在请求返回写入 resPromise 前设置，不然会报错。
+
+        // 在请求返回前设置 resPromise
         Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
-        // 发送信息
+
+        // 准备HTTP3请求数据
         Http3HeadersFrame http3HeadersFrame = getHttp3HeadersFrame(socketAddress);
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
+
+        // 添加监听器，处理非阻塞行为
+        quicStreamChannelFuture.addListener((GenericFutureListener<Future<QuicStreamChannel>>) future -> {
+            if (future.isSuccess()) {
+                QuicStreamChannel quicStreamChannel = future.getNow();
+
+                // 写入HTTP3 headers
+                quicStreamChannel.write(http3HeadersFrame);
+
+                // 异步写入并刷新数据帧
+                quicStreamChannel.writeAndFlush(defaultHttp3DataFrame)
+                        .addListener(QuicStreamChannel.SHUTDOWN_OUTPUT)
+                        .addListener((GenericFutureListener<Future<Void>>) writeFuture -> {
+                            if (writeFuture.isSuccess()) {
+                                // 等待响应并通过Promise处理结果
+                                resPromise.addListener(resultFuture -> {
+                                    if (resultFuture.isSuccess()) {
+                                        Object result = resultFuture.getNow();
+                                        log.debug("Send a packet[{}], get result = {}", rpcMessage, result);
+                                        quicStreamChannel.closeFuture();
+
+                                        // 将结果传递给 CompletableFuture
+                                        objectCompletableFuture.complete(result);
+                                    } else {
+                                        // 处理失败情况
+                                        log.warn("Remote invocation failed, cause: {}", resultFuture.cause());
+                                        objectCompletableFuture.completeExceptionally(resultFuture.cause());
+                                    }
+                                });
+                            } else {
+                                log.warn("Write operation failed, cause: {}", writeFuture.cause());
+                                objectCompletableFuture.completeExceptionally(writeFuture.cause());
+                            }
+                        });
+            } else {
+                log.warn("Failed to get QuicStreamChannel, cause: {}", future.cause());
+                resPromise.setFailure(future.cause());
+                objectCompletableFuture.completeExceptionally(future.cause());
+            }
+        });
+        Object o;
         try {
-            quicStreamChannel = quicStreamChannelFuture.sync().getNow();
+            o = objectCompletableFuture.get();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        quicStreamChannel.write(http3HeadersFrame);
-        try {
-            quicStreamChannel.writeAndFlush(defaultHttp3DataFrame)
-                    .addListener(QuicStreamChannel.SHUTDOWN_OUTPUT).sync();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            // 同步等待结果
-            resPromise.sync().get();
-            // 取出结果
-            if (resPromise.isSuccess()) {
-                Object result = resPromise.getNow();
-                log.debug("Send a packet[{}], get result = {}", rpcMessage, result);
-                quicStreamChannel.closeFuture();
-                return result;
-            } else {
-                throw resPromise.cause();
-            }
-        } catch (Throwable e) {
-            // 远程调用的过程出现了异常
-            log.warn("Method invocation failed, with exception");
-            throw new RpcInvocationException(e.getMessage());
-        }
-
-
+        return o;
     }
 
     private void transportException(Throwable cause) {

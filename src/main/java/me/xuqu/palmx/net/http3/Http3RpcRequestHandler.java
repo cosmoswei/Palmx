@@ -24,7 +24,6 @@ public class Http3RpcRequestHandler extends Http3RequestStreamInboundHandler {
         ctx.close().syncUninterruptibly();
     }
 
-
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {

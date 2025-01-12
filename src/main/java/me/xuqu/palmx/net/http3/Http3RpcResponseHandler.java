@@ -26,7 +26,6 @@ public class Http3RpcResponseHandler extends Http3RequestStreamInboundHandler {
         throw new RpcInvocationException("Caught a exception", cause);
     }
 
-
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3HeadersFrame frame) {
