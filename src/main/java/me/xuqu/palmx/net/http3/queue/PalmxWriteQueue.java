@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.xuqu.palmx.command;
+package me.xuqu.palmx.net.http3.queue;
 
 
 import java.util.concurrent.CompletionException;
@@ -23,12 +23,13 @@ import java.util.concurrent.Executor;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
+import me.xuqu.palmx.net.http3.command.QueuedCommand;
 
-public class WriteQueue extends BatchExecutorQueue<QueuedCommand> {
+public class PalmxWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
-    public WriteQueue() {}
+    public PalmxWriteQueue() {}
 
-    public WriteQueue(int chunkSize) {
+    public PalmxWriteQueue(int chunkSize) {
         super(chunkSize);
     }
 

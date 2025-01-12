@@ -1,4 +1,4 @@
-package me.xuqu.palmx.command;
+package me.xuqu.palmx.net.http3.queue;
 
 import java.util.LinkedList;
 import java.util.Queue;

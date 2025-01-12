@@ -1,12 +1,15 @@
-package me.xuqu.palmx.command;
+package me.xuqu.palmx.net.http3.command;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import me.xuqu.palmx.net.RpcMessage;
 
 public abstract class QueuedCommand {
 
     protected Channel channel;
+
+    private RpcMessage rpcMessage;
 
     private ChannelPromise promise;
 

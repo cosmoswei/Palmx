@@ -1,22 +1,22 @@
-package me.xuqu.palmx.command;
+package me.xuqu.palmx.net.http3.command;
 
 
 import java.util.concurrent.CompletableFuture;
 
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.incubator.codec.quic.QuicStreamChannel;
 
-public class StreamChannelFuture extends CompletableFuture<Channel> {
+public class QuicStreamChannelFuture extends CompletableFuture<Channel> {
 
     private final Channel parentChannel;
 
     private Throwable cause;
 
-    public StreamChannelFuture(Channel parentChannel) {
+    public QuicStreamChannelFuture(Channel parentChannel) {
         this.parentChannel = parentChannel;
     }
 
-    public StreamChannelFuture(Http2StreamChannel channel) {
+    public QuicStreamChannelFuture(QuicStreamChannel channel) {
         this.complete(channel);
         this.parentChannel = channel.parent();
     }

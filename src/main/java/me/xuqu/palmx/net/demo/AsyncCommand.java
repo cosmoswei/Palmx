@@ -1,4 +1,4 @@
-package me.xuqu.palmx.net.command;
+package me.xuqu.palmx.net.demo;
 
 @FunctionalInterface
 public interface AsyncCommand {

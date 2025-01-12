@@ -1,4 +1,4 @@
-package me.xuqu.palmx.command;
+package me.xuqu.palmx.net.demo;
 
 
 import io.netty.incubator.codec.quic.QuicStreamChannel;
