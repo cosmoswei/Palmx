@@ -68,7 +68,9 @@ public class BatchExecutorQueue<T> {
         }
     }
 
-    protected void prepare(T item) {}
+    protected void prepare(T item) {
+    }
 
-    protected void flush(T item) {}
+    protected void flush(T item) {
+    }
 }

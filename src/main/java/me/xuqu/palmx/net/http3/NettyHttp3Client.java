@@ -30,6 +30,7 @@ import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,12 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class NettyHttp3Client extends AbstractPalmxClient {
 
-    private final Cache<String, QuicChannel> connectionCache = Caffeine.newBuilder()
-            //过期时间
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            //最大容量
-            .maximumSize(20)
-            .build();
+    private final ConcurrentHashMap<String, QuicChannel> connectionCache = new ConcurrentHashMap<>();
 
     private final NioEventLoopGroup group = new NioEventLoopGroup(PalmxConfig.ioThreads());
 
@@ -100,17 +96,17 @@ public class NettyHttp3Client extends AbstractPalmxClient {
                                         objectCompletableFuture.complete(result);
                                     } else {
                                         // 处理失败情况
-                                        log.warn("Remote invocation failed, cause: {}", resultFuture.cause());
+                                        log.warn("Remote invocation failed, cause: {}", resultFuture.cause().getMessage());
                                         objectCompletableFuture.completeExceptionally(resultFuture.cause());
                                     }
                                 });
                             } else {
-                                log.warn("Write operation failed, cause: {}", writeFuture.cause());
+                                log.warn("Write operation failed, cause: {}", writeFuture.cause().getMessage());
                                 objectCompletableFuture.completeExceptionally(writeFuture.cause());
                             }
                         });
             } else {
-                log.warn("Failed to get QuicStreamChannel, cause: {}", future.cause());
+                log.warn("Failed to get QuicStreamChannel, cause: {}", future.cause().getMessage());
                 resPromise.setFailure(future.cause());
                 objectCompletableFuture.completeExceptionally(future.cause());
             }
@@ -142,7 +138,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             return Http3.newRequestStream(quicChannel, new Http3RpcResponseHandler());
         } catch (Exception e) {
             log.error("get quic stream channel error, msg = {}", e.getMessage());
-            connectionCache.invalidate(socketAddress.getHostString());
+            connectionCache.remove(socketAddress.getHostString());
             return getQuicStreamChannelFuture(socketAddress);
         }
     }
@@ -163,7 +159,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
 
     private QuicChannel getQuicChannel(InetSocketAddress socketAddress) {
         String hostname = socketAddress.getHostString();
-        QuicChannel quicChannel = connectionCache.getIfPresent(hostname);
+        QuicChannel quicChannel = connectionCache.get(hostname);
         // 去缓冲里查找
         if (null == quicChannel) {
             quicChannel = newQuicChannel(socketAddress);
@@ -174,7 +170,6 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         // 无效连接
         if (!quicChannel.isActive()) {
             log.info("quicChannel isClosed");
-            connectionCache.invalidate(hostname);
             quicChannel = newQuicChannel(socketAddress);
             connectionCache.put(hostname, quicChannel);
         }

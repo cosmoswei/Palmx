@@ -1,51 +1,45 @@
 package me.xuqu.palmx.net.http3.command;
 
-import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
 
 public class DataQueueCommand extends QuicStreamChannelCommand {
 
-    private final byte[] data;
-
-    private final int compressFlag;
+    private final DefaultHttp3DataFrame data;
 
     private final boolean endStream;
 
     private DataQueueCommand(
-            QuicStreamChannelFuture streamChannelFuture, byte[] data, int compressFlag, boolean endStream) {
+            QuicStreamChannelFuture streamChannelFuture, DefaultHttp3DataFrame data, boolean endStream) {
         super(streamChannelFuture);
         this.data = data;
-        this.compressFlag = compressFlag;
+        super.channel = streamChannelFuture.getParentChannel();
         this.endStream = endStream;
     }
 
     public static DataQueueCommand create(
-            QuicStreamChannelFuture streamChannelFuture, byte[] data, boolean endStream, int compressFlag) {
-        return new DataQueueCommand(streamChannelFuture, data, compressFlag, endStream);
+            QuicStreamChannelFuture streamChannelFuture, DefaultHttp3DataFrame http3DataFrame, boolean endStream) {
+        return new DataQueueCommand(streamChannelFuture, http3DataFrame, endStream);
     }
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        if (data == null) {
-            ctx.write(new DefaultHttp2DataFrame(endStream), promise);
-        } else {
-            ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(compressFlag);
-            buf.writeInt(data.length);
-            buf.writeBytes(data);
-            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
-        }
+        System.out.println("执行到了 DataQueueCommand.run" + channel.getClass());
+        ctx.write(data, promise);
     }
 
-    // for test
-    public byte[] getData() {
+    public DefaultHttp3DataFrame getData() {
         return data;
     }
 
-    // for test
     public boolean isEndStream() {
         return endStream;
+    }
+
+    @Override
+    public Channel channel() {
+        return channel;
     }
 }

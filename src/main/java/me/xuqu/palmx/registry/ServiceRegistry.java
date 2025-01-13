@@ -1,5 +1,6 @@
 package me.xuqu.palmx.registry;
 
+import com.google.common.collect.Lists;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 
 import java.util.LinkedHashSet;
@@ -18,5 +19,9 @@ public interface ServiceRegistry {
     void unregister(String serviceName, PalmxSocketAddress inetSocketAddress);
 
     List<PalmxSocketAddress> lookup(String serviceName);
+
+    default List<PalmxSocketAddress> mock(String serviceName) {
+        return Lists.newArrayList(new PalmxSocketAddress("127.0.0.1", 8080));
+    }
 
 }

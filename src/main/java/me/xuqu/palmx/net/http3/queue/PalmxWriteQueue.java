@@ -17,24 +17,22 @@
 package me.xuqu.palmx.net.http3.queue;
 
 
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 import me.xuqu.palmx.net.http3.command.QueuedCommand;
 
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+
+// 参考 PendingWriteQueue
 public class PalmxWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
-    public PalmxWriteQueue() {}
+    public PalmxWriteQueue() {
+    }
 
     public PalmxWriteQueue(int chunkSize) {
         super(chunkSize);
-    }
-
-    public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
-        return enqueue(command);
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {

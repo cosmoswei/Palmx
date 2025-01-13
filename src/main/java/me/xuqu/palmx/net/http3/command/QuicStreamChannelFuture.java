@@ -16,11 +16,6 @@ public class QuicStreamChannelFuture extends CompletableFuture<Channel> {
         this.parentChannel = parentChannel;
     }
 
-    public QuicStreamChannelFuture(QuicStreamChannel channel) {
-        this.complete(channel);
-        this.parentChannel = channel.parent();
-    }
-
     public Channel getParentChannel() {
         return parentChannel;
     }
