@@ -5,6 +5,7 @@ import me.xuqu.palmx.common.PalmxConfig;
 import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.net.PalmxClient;
 import me.xuqu.palmx.net.RpcRequest;
+import me.xuqu.palmx.net.http3.command.Http3NewClient;
 import me.xuqu.palmx.net.netty.NettyClient;
 import me.xuqu.palmx.net.http3.NettyHttp3Client;
 
@@ -30,7 +31,7 @@ public class DefaultServiceLocator implements ServiceLocator {
         if (CLIENT == null) {
             synchronized (DefaultServiceLocator.class) {
                 if (PalmxConfig.getQuicEnable()) {
-                    CLIENT = new NettyHttp3Client();
+                    CLIENT = new Http3NewClient();
                 } else {
                     CLIENT = new NettyClient();
                 }

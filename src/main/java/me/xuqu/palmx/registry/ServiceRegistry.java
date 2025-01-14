@@ -21,7 +21,7 @@ public interface ServiceRegistry {
     List<PalmxSocketAddress> lookup(String serviceName);
 
     default List<PalmxSocketAddress> mock(String serviceName) {
-        return Lists.newArrayList(new PalmxSocketAddress("127.0.0.1", 8080));
+        return Lists.newArrayList(new PalmxSocketAddress("127.0.0.1", 8081));
     }
 
 }

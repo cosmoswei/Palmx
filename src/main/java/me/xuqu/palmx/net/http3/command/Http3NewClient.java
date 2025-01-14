@@ -21,7 +21,6 @@ import me.xuqu.palmx.net.AbstractPalmxClient;
 import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcRequest;
-import me.xuqu.palmx.net.http3.Http3RpcResponseHandler;
 import me.xuqu.palmx.net.http3.MessageCodecHelper;
 import me.xuqu.palmx.net.http3.queue.PalmxWriteQueue;
 import me.xuqu.palmx.net.netty.RpcResponseHandler;
@@ -30,6 +29,8 @@ import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -77,17 +78,17 @@ public class Http3NewClient extends AbstractPalmxClient {
 
         // 获取 quicStreamChannel
         CreateQuicStreamChannelQueueCommand quicStreamChannel = CreateQuicStreamChannelQueueCommand.create(socketAddress,
-                new Http3RpcResponseHandler(), future, enqueue);
-        ChannelFuture quicStreamChannelFuture = palmxWriteQueue.enqueue(quicStreamChannel);
+                future, enqueue);
+        palmxWriteQueue.enqueue(quicStreamChannel);
 
         // 写入头
-        HeaderQueueCommand header = HeaderQueueCommand.createHeader(future, getHttp3HeadersFrame(socketAddress));
-        palmxWriteQueue.enqueue(header);
+        Http3HeaderQueueCommand header = Http3HeaderQueueCommand.createHeader(future, getHttp3HeadersFrame(socketAddress));
+        palmxWriteQueue.enqueueFuture(header, datagramChannel.eventLoop());
 
         // 写入body
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
-        DataQueueCommand body = DataQueueCommand.create(future, defaultHttp3DataFrame, false);
-        palmxWriteQueue.enqueue(body);
+        Http3DataQueueCommand body = Http3DataQueueCommand.create(future, defaultHttp3DataFrame);
+        palmxWriteQueue.enqueue(body, datagramChannel.eventLoop());
 
         try {
             // 等待命令完成
@@ -137,7 +138,6 @@ public class Http3NewClient extends AbstractPalmxClient {
                 .initialMaxData(10000000)
                 .initialMaxStreamDataBidirectionalLocal(1000000)
                 .initialMaxStreamDataBidirectionalRemote(1000000)
-
                 .build();
         Bootstrap bs = new Bootstrap();
         try {
@@ -149,6 +149,5 @@ public class Http3NewClient extends AbstractPalmxClient {
             throw new RuntimeException(e);
         }
         return datagramChannel;
-
     }
 }

@@ -7,11 +7,13 @@ import io.netty.incubator.codec.http3.Http3ClientConnectionHandler;
 import io.netty.incubator.codec.quic.QuicChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CreateQuicChannelQueueCommand extends QueuedCommand {
+@Slf4j
+public class CreateQuicChannelQueueCommand extends QueueCommand {
 
     public static final ConcurrentHashMap<String, QuicChannel> connectionCache = new ConcurrentHashMap<>();
 
@@ -19,15 +21,12 @@ public class CreateQuicChannelQueueCommand extends QueuedCommand {
 
     private final InetSocketAddress socketAddress;
 
-    private final QuicStreamChannelFuture streamChannelFuture;
-
     private CreateQuicChannelQueueCommand(
             InetSocketAddress socketAddress, QuicStreamChannelFuture future) {
         this.socketAddress = socketAddress;
-        this.streamChannelFuture = future;
         this.parentChannel = future.getParentChannel();
-        this.promise(future.getParentChannel().newPromise());
-        this.channel(future.getParentChannel());
+        super.setPromise(future.getParentChannel().newPromise());
+        this.setChannel(future.getParentChannel());
     }
 
     public static CreateQuicChannelQueueCommand create(
@@ -41,7 +40,7 @@ public class CreateQuicChannelQueueCommand extends QueuedCommand {
 
     @Override
     public void run(Channel channel) {
-        System.out.println("执行到了 CreateQuicChannelQueueCommand.run" + channel.getClass());
+        log.info("第一步，创建 QuicChannel");
         String hostName = socketAddress.getHostName();
         QuicChannel quicChannel = connectionCache.get(hostName);
         // 连接缓存
@@ -52,15 +51,16 @@ public class CreateQuicChannelQueueCommand extends QueuedCommand {
                     .connect().addListener((GenericFutureListener<Future<QuicChannel>>) future -> {
                         if (future.isSuccess()) {
                             QuicChannel now = future.getNow();
+                            System.out.println("QuicChannel 创建成功！" + now);
                             connectionCache.putIfAbsent(hostName, now);
-                            this.promise().setSuccess();
+                            ChannelPromise channelPromise = this.getPromise();
+                            channelPromise.setSuccess();
                         } else {
-                            this.promise().setFailure(future.cause());
+                            this.getPromise().setFailure(future.cause());
                         }
                     });
-
         } else {
-            this.promise().setSuccess();
+            this.getPromise().setSuccess();
         }
     }
 }

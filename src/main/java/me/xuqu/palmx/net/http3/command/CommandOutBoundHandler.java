@@ -25,8 +25,9 @@ public class CommandOutBoundHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof QueuedCommand) {
-            QueuedCommand command = (QueuedCommand) msg;
+        System.out.println("执行到了 CommandOutBoundHandler.write");
+        if (msg instanceof QueueCommand) {
+            QueueCommand command = (QueueCommand) msg;
             command.send(ctx, promise);
         } else {
             super.write(ctx, msg, promise);
