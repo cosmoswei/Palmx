@@ -1,27 +1,18 @@
 package me.xuqu.palmx.net.http3;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.*;
 import io.netty.incubator.codec.quic.QuicChannel;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
-import io.netty.util.concurrent.*;
+import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
-import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
-import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcRequest;
 import me.xuqu.palmx.registry.ServiceRegistry;
@@ -32,8 +23,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NettyHttp3Client extends AbstractPalmxClient {
@@ -69,7 +58,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), resPromise);
 
         // 准备HTTP3请求数据
-        Http3HeadersFrame http3HeadersFrame = getHttp3HeadersFrame(socketAddress);
+        Http3HeadersFrame http3HeadersFrame = ChannelBuilder.buildHttp3Headers(socketAddress);
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
 
         // 添加监听器，处理非阻塞行为
@@ -124,13 +113,7 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         // todo 处理异常
     }
 
-    private Http3HeadersFrame getHttp3HeadersFrame(PalmxSocketAddress socketAddress) {
-        Http3HeadersFrame frame = new DefaultHttp3HeadersFrame();
-        frame.headers().method("POST").path("/")
-                .authority(socketAddress.toString())
-                .scheme("https");
-        return frame;
-    }
+
 
     private Future<QuicStreamChannel> getQuicStreamChannelFuture(InetSocketAddress socketAddress) {
         QuicChannel quicChannel = getQuicChannel(socketAddress);
@@ -143,11 +126,13 @@ public class NettyHttp3Client extends AbstractPalmxClient {
         }
     }
 
-
     private QuicChannel newQuicChannel(InetSocketAddress socketAddress) {
         QuicChannel quicChannel;
+        if (channel == null) {
+            channel = ChannelBuilder.buildDatagramchannel(group);
+        }
         try {
-            quicChannel = QuicChannel.newBootstrap(getChannel())
+            quicChannel = QuicChannel.newBootstrap(channel)
                     .handler(new Http3ClientConnectionHandler())
                     .remoteAddress(socketAddress)
                     .connect().get();
@@ -174,42 +159,6 @@ public class NettyHttp3Client extends AbstractPalmxClient {
             connectionCache.put(hostname, quicChannel);
         }
 
-        // 流数量限制，数量跟由服务端的 initialMaxStreamsBidirectional 配置
-//        long allowedStreams = quicChannel.peerAllowedStreams(QuicStreamType.BIDIRECTIONAL);
-//        if (allowedStreams <= 0) {
-//            // 流释放时，不会恢复（增加）
-//            connectionCache.invalidate(hostname);
-//            quicChannel = newQuicChannel(socketAddress);
-//            connectionCache.put(hostname, quicChannel);
-//        }
         return quicChannel;
-    }
-
-    private Channel getChannel() {
-        if (null != channel) {
-            return channel;
-        }
-        QuicSslContext context = QuicSslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .applicationProtocols(Http3.supportedApplicationProtocols()).build();
-        ChannelHandler channelHandler = Http3.newQuicClientCodecBuilder()
-                .sslContext(context)
-                .maxIdleTimeout(5000, TimeUnit.MILLISECONDS)
-                .initialMaxData(10000000)
-                .initialMaxStreamDataBidirectionalLocal(1000000)
-                .initialMaxStreamDataBidirectionalRemote(1000000)
-
-                .build();
-        Bootstrap bs = new Bootstrap();
-        try {
-            channel = bs.group(group)
-                    .channel(DatagramChannelHandler.getChannelClass())
-                    .handler(channelHandler)
-                    .bind(0).sync().channel();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return channel;
-
     }
 }

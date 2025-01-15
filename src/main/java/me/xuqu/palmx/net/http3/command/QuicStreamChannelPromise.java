@@ -25,5 +25,4 @@ public class QuicStreamChannelPromise extends DefaultPromise<Channel> {
     public boolean isSuccess() {
         return isDone() && cause() == null;
     }
-
 }

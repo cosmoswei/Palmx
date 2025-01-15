@@ -26,7 +26,6 @@ public abstract class QueueCommand {
     }
 
     public void run(Channel channel) {
-        log.info("{},  run.run() = {}", this.getClass().getName(), channel);
         if (channel.isActive()) {
             channel.write(this).addListener(future -> {
                 if (future.isSuccess()) {

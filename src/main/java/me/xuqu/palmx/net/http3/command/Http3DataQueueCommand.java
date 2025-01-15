@@ -7,7 +7,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +38,10 @@ public class Http3DataQueueCommand extends Http3FrameQueueCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        log.info("执行到了 DataQueueCommand.run");
         headerFuture.addListener(future -> {
             if (future.isSuccess()) {
                 QuicStreamChannel quicStreamChannel = (QuicStreamChannel) channelDefaultPromise.getNow();
-                quicStreamChannel.write(data, promise);
-//                promise.setSuccess();
+                quicStreamChannel.write(data, promise).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
             }
         });
     }
@@ -63,9 +60,4 @@ public class Http3DataQueueCommand extends Http3FrameQueueCommand {
                 }
         );
     }
-
-    public DefaultHttp3DataFrame getData() {
-        return data;
-    }
-
 }

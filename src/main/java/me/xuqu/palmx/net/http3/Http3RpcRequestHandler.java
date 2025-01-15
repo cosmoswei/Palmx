@@ -50,7 +50,7 @@ public class Http3RpcRequestHandler extends Http3RequestStreamInboundHandler {
         ctx.write(getDefaultHttp3HeadersFrame(len));
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
         ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
-        log.info("duration Time = {}", System.currentTimeMillis() - start);
+        log.debug("duration Time = {}", System.currentTimeMillis() - start);
         ReferenceCountUtil.release(frame);
     }
 

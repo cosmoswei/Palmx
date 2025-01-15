@@ -40,7 +40,7 @@ public class CreateQuicStreamChannelQueueCommand extends QueueCommand {
                                                              QuicStreamChannelPromise streamCommand,
                                                              ChannelFuture channelFuture,
                                                              DefaultPromise<Channel> channelDefaultPromise) {
-        return new CreateQuicStreamChannelQueueCommand(address, streamCommand, channelFuture,channelDefaultPromise);
+        return new CreateQuicStreamChannelQueueCommand(address, streamCommand, channelFuture, channelDefaultPromise);
     }
 
     @Override
@@ -49,7 +49,6 @@ public class CreateQuicStreamChannelQueueCommand extends QueueCommand {
 
     @Override
     public void run(Channel channel) {
-        log.info("第二步，创建 QuicStreamChannel");
         quicChannelFuture.addListener(future -> {
             if (future.isSuccess()) {
                 QuicChannel quicChannel = connectionCache.get(address.getHostName());
@@ -61,19 +60,18 @@ public class CreateQuicStreamChannelQueueCommand extends QueueCommand {
                                 .addLast(new CommandOutBoundHandler());
                     }
                 };
-                System.out.println("quicChannel = " + quicChannel.isActive());
                 Http3.newRequestStream(quicChannel, initializer).addListener((GenericFutureListener<Future<QuicStreamChannel>>) quicStreamChannelFuture -> {
                     if (quicStreamChannelFuture.isSuccess()) {
-                        log.info("QuicStreamChannel 创建成功！");
+                        log.debug("QuicStreamChannel 创建成功！");
                         QuicStreamChannel quicStreamChannel = quicStreamChannelFuture.getNow();
                         channelDefaultPromise.setSuccess(quicStreamChannel);
                     } else {
-                        log.info("QuicStreamChannel 创建失败！cause = {}", quicStreamChannelFuture.cause().getMessage());
+                        log.debug("QuicStreamChannel 创建失败！cause = {}", quicStreamChannelFuture.cause().getMessage());
                         channelDefaultPromise.setFailure(quicStreamChannelFuture.cause());
                     }
                 });
             } else {
-                log.info("quicChannelFuture 创建失败！cause = {}", quicChannelFuture.cause().getMessage());
+                log.debug("quicChannelFuture 创建失败！cause = {}", quicChannelFuture.cause().getMessage());
                 channelDefaultPromise.setFailure(streamPromise.cause());
             }
         });

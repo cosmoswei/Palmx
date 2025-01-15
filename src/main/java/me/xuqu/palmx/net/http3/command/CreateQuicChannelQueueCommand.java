@@ -40,7 +40,6 @@ public class CreateQuicChannelQueueCommand extends QueueCommand {
 
     @Override
     public void run(Channel channel) {
-        log.info("第一步，创建 QuicChannel");
         String hostName = socketAddress.getHostName();
         QuicChannel quicChannel = connectionCache.get(hostName);
         // 连接缓存
@@ -51,7 +50,6 @@ public class CreateQuicChannelQueueCommand extends QueueCommand {
                     .connect().addListener((GenericFutureListener<Future<QuicChannel>>) future -> {
                         if (future.isSuccess()) {
                             QuicChannel now = future.getNow();
-                            System.out.println("QuicChannel 创建成功！" + now);
                             connectionCache.put(hostName, now);
                             ChannelPromise channelPromise = this.getPromise();
                             channelPromise.setSuccess();

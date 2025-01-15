@@ -51,7 +51,6 @@ public class PalmxWriteQueue extends BatchExecutorQueue<QueueCommand> {
     @Override
     protected void flush(QueueCommand item) {
         try {
-            log.info("PalmxWriteQueue.command = {}", item.getClass().getName());
             Channel channel = item.getChannel();
             item.run(channel);
             channel.flush();

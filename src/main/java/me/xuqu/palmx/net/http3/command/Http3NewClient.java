@@ -1,16 +1,9 @@
 package me.xuqu.palmx.net.http3.command;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.http3.DefaultHttp3DataFrame;
-import io.netty.incubator.codec.http3.DefaultHttp3HeadersFrame;
-import io.netty.incubator.codec.http3.Http3;
-import io.netty.incubator.codec.quic.QuicSslContext;
-import io.netty.incubator.codec.quic.QuicSslContextBuilder;
 import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 import me.xuqu.palmx.common.PalmxConfig;
@@ -18,20 +11,16 @@ import me.xuqu.palmx.exception.RpcInvocationException;
 import me.xuqu.palmx.loadbalance.LoadBalanceHolder;
 import me.xuqu.palmx.loadbalance.PalmxSocketAddress;
 import me.xuqu.palmx.net.AbstractPalmxClient;
-import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcRequest;
+import me.xuqu.palmx.net.http3.ChannelBuilder;
 import me.xuqu.palmx.net.http3.Http3RpcResponseHandler;
 import me.xuqu.palmx.net.http3.MessageCodecHelper;
 import me.xuqu.palmx.net.http3.queue.PalmxWriteQueue;
-import me.xuqu.palmx.net.netty.RpcResponseHandler;
 import me.xuqu.palmx.registry.ServiceRegistry;
 import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
-import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class Http3NewClient extends AbstractPalmxClient {
@@ -79,24 +68,22 @@ public class Http3NewClient extends AbstractPalmxClient {
 
         // 获取 quicStreamChannel
         CreateQuicStreamChannelQueueCommand quicStreamChannel = CreateQuicStreamChannelQueueCommand.create(socketAddress,
-                streamPromise, channelFuture,channelDefaultPromise);
+                streamPromise, channelFuture, channelDefaultPromise);
         ChannelFuture streamFuture = palmxWriteQueue.enqueue(quicStreamChannel);
 
         // 写入头
-        Http3HeaderQueueCommand header = Http3HeaderQueueCommand.createHeader(streamPromise, getHttp3HeadersFrame(socketAddress),channelDefaultPromise);
+        Http3HeaderQueueCommand header = Http3HeaderQueueCommand.createHeader(streamPromise, ChannelBuilder.buildHttp3Headers(socketAddress), channelDefaultPromise);
         ChannelFuture headerFuture = palmxWriteQueue.enqueueFuture(header, datagramChannel.eventLoop());
 
         // 写入body
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
-        Http3DataQueueCommand body = Http3DataQueueCommand.create(streamPromise, defaultHttp3DataFrame, headerFuture,channelDefaultPromise);
+        Http3DataQueueCommand body = Http3DataQueueCommand.create(streamPromise, defaultHttp3DataFrame, headerFuture, channelDefaultPromise);
         palmxWriteQueue.enqueue(body, datagramChannel.eventLoop());
 
         try {
-            System.out.println("================= = " + body);
             // 等待命令完成
-            promise.sync().get();
+            promise.await(2000);
             if (promise.isSuccess()) {
-                System.out.println("================= = " + body);
                 Object result = promise.getNow(); // 取出结果
                 log.debug("Send a packet [{}], get result = {}", rpcMessage, result);
                 return result;
@@ -109,48 +96,11 @@ public class Http3NewClient extends AbstractPalmxClient {
         }
     }
 
-
-    public static void main(String[] args) {
-        Http3NewClient http3NewClient = new Http3NewClient();
-        RpcRequest rpcRequest = new RpcRequest();
-        RpcMessage rpcMessage = new RpcMessage();
-        rpcRequest.setInterfaceName("abc");
-        rpcMessage.setData(rpcRequest);
-        rpcMessage.setMessageType((byte) PalmxConfig.getSerializationType().ordinal());
-        http3NewClient.doSend(rpcMessage);
-    }
-
-    private DefaultHttp3HeadersFrame getHttp3HeadersFrame(InetSocketAddress socketAddress) {
-        DefaultHttp3HeadersFrame frame = new DefaultHttp3HeadersFrame();
-        frame.headers().method("POST").path("/")
-                .authority(socketAddress.toString())
-                .scheme("https");
-        return frame;
-    }
-
     private Channel getDatagramChannel() {
         if (null != datagramChannel) {
             return datagramChannel;
         }
-        QuicSslContext context = QuicSslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .applicationProtocols(Http3.supportedApplicationProtocols()).build();
-        ChannelHandler channelHandler = Http3.newQuicClientCodecBuilder()
-                .sslContext(context)
-                .maxIdleTimeout(5000, TimeUnit.MILLISECONDS)
-                .initialMaxData(10000000)
-                .initialMaxStreamDataBidirectionalLocal(1000000)
-                .initialMaxStreamDataBidirectionalRemote(1000000)
-                .build();
-        Bootstrap bs = new Bootstrap();
-        try {
-            datagramChannel = bs.group(nioEventLoopGroup)
-                    .channel(DatagramChannelHandler.getChannelClass())
-                    .handler(channelHandler)
-                    .bind(0).sync().channel();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        datagramChannel = ChannelBuilder.buildDatagramchannel(nioEventLoopGroup);
         return datagramChannel;
     }
 }
