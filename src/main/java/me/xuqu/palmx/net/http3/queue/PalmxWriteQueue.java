@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
-// 参考 PendingWriteQueue
+// 参考 PendingWriteQueue，批量写的优化效果不明显，本来有 17000 的 qps，下降到 3300
 public class PalmxWriteQueue extends BatchExecutorQueue<QueueCommand> {
 
     private static final Logger log = LoggerFactory.getLogger(PalmxWriteQueue.class);
