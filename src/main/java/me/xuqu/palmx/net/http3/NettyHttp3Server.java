@@ -25,10 +25,6 @@ public class NettyHttp3Server extends AbstractPalmxServer {
     public NettyHttp3Server() {
     }
 
-    public NettyHttp3Server(int port) {
-        super(port);
-    }
-
     @Override
     protected void doStart() {
         ZookeeperUpdater.startUpdating();
@@ -65,16 +61,14 @@ public class NettyHttp3Server extends AbstractPalmxServer {
                     }
                 }).build();
         try {
-
             Bootstrap bs = new Bootstrap();
             Channel channel = bs.group(group)
                     .channel(DatagramChannelHandler.getChannelClass())
                     .handler(channelHandler)
                     .bind(new InetSocketAddress(port)).sync().channel();
             channel.closeFuture().sync();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("服务端启动失败 cause = {}", e.getCause());
         } finally {
             group.shutdownGracefully();
         }
