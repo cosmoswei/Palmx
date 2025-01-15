@@ -8,9 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class Http3FrameQueueCommand extends QueueCommand {
 
-    protected final QuicStreamChannelFuture quicStreamChannelFuture;
+    protected final QuicStreamChannelPromise quicStreamChannelFuture;
 
-    protected Http3FrameQueueCommand(QuicStreamChannelFuture quicStreamChannelFuture) {
+    protected Http3FrameQueueCommand(QuicStreamChannelPromise quicStreamChannelFuture) {
         this.quicStreamChannelFuture = quicStreamChannelFuture;
         this.setPromise(quicStreamChannelFuture.getParentChannel().newPromise());
     }

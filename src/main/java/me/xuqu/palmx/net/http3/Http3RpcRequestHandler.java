@@ -33,7 +33,7 @@ public class Http3RpcRequestHandler extends Http3RequestStreamInboundHandler {
     @Override
     protected void channelRead(
             ChannelHandlerContext ctx, Http3DataFrame frame) {
-//        long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         RpcMessage reqMessage = MessageCodecHelper.decode(frame.content());
         RpcRequest rpcRequest = (RpcRequest) reqMessage.getData();
         boolean control = FlowControlHolder.control(new FlowControlReq(rpcRequest.getInterfaceName()));
@@ -50,7 +50,7 @@ public class Http3RpcRequestHandler extends Http3RequestStreamInboundHandler {
         ctx.write(getDefaultHttp3HeadersFrame(len));
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(encode);
         ctx.writeAndFlush(defaultHttp3DataFrame).addListener(QuicStreamChannel.SHUTDOWN_OUTPUT);
-//        log.info("duration Time = {}", System.currentTimeMillis() - start);
+        log.info("duration Time = {}", System.currentTimeMillis() - start);
         ReferenceCountUtil.release(frame);
     }
 

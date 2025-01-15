@@ -21,6 +21,7 @@ import me.xuqu.palmx.net.AbstractPalmxClient;
 import me.xuqu.palmx.net.DatagramChannelHandler;
 import me.xuqu.palmx.net.RpcMessage;
 import me.xuqu.palmx.net.RpcRequest;
+import me.xuqu.palmx.net.http3.Http3RpcResponseHandler;
 import me.xuqu.palmx.net.http3.MessageCodecHelper;
 import me.xuqu.palmx.net.http3.queue.PalmxWriteQueue;
 import me.xuqu.palmx.net.netty.RpcResponseHandler;
@@ -29,8 +30,7 @@ import me.xuqu.palmx.registry.impl.ZookeeperServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -67,33 +67,36 @@ public class Http3NewClient extends AbstractPalmxClient {
         DefaultPromise<Object> promise = new DefaultPromise<>(datagramChannel.eventLoop());
 
         // 响应结果
-        RpcResponseHandler.map.put(rpcMessage.getSequenceId(), promise);
+        Http3RpcResponseHandler.map.put(rpcMessage.getSequenceId(), promise);
 
         // 获取 quicStreamChannelFuture
-        QuicStreamChannelFuture future = new QuicStreamChannelFuture(datagramChannel);
-
+        QuicStreamChannelPromise streamPromise = new QuicStreamChannelPromise(datagramChannel);
+        DefaultPromise<Channel> channelDefaultPromise = new DefaultPromise<>(datagramChannel.eventLoop());
         // 获取 quicChannel (连接)
-        CreateQuicChannelQueueCommand quicChannel = CreateQuicChannelQueueCommand.create(socketAddress, future);
-        ChannelFuture enqueue = palmxWriteQueue.enqueue(quicChannel);
+        CreateQuicChannelQueueCommand quicChannel = CreateQuicChannelQueueCommand.create(socketAddress,
+                streamPromise);
+        ChannelFuture channelFuture = palmxWriteQueue.enqueue(quicChannel);
 
         // 获取 quicStreamChannel
         CreateQuicStreamChannelQueueCommand quicStreamChannel = CreateQuicStreamChannelQueueCommand.create(socketAddress,
-                future, enqueue);
-        palmxWriteQueue.enqueue(quicStreamChannel);
+                streamPromise, channelFuture,channelDefaultPromise);
+        ChannelFuture streamFuture = palmxWriteQueue.enqueue(quicStreamChannel);
 
         // 写入头
-        Http3HeaderQueueCommand header = Http3HeaderQueueCommand.createHeader(future, getHttp3HeadersFrame(socketAddress));
-        palmxWriteQueue.enqueueFuture(header, datagramChannel.eventLoop());
+        Http3HeaderQueueCommand header = Http3HeaderQueueCommand.createHeader(streamPromise, getHttp3HeadersFrame(socketAddress),channelDefaultPromise);
+        ChannelFuture headerFuture = palmxWriteQueue.enqueueFuture(header, datagramChannel.eventLoop());
 
         // 写入body
         DefaultHttp3DataFrame defaultHttp3DataFrame = new DefaultHttp3DataFrame(MessageCodecHelper.encode(rpcMessage));
-        Http3DataQueueCommand body = Http3DataQueueCommand.create(future, defaultHttp3DataFrame);
+        Http3DataQueueCommand body = Http3DataQueueCommand.create(streamPromise, defaultHttp3DataFrame, headerFuture,channelDefaultPromise);
         palmxWriteQueue.enqueue(body, datagramChannel.eventLoop());
 
         try {
+            System.out.println("================= = " + body);
             // 等待命令完成
             promise.sync().get();
             if (promise.isSuccess()) {
+                System.out.println("================= = " + body);
                 Object result = promise.getNow(); // 取出结果
                 log.debug("Send a packet [{}], get result = {}", rpcMessage, result);
                 return result;

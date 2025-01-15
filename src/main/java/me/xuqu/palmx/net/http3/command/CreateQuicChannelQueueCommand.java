@@ -22,7 +22,7 @@ public class CreateQuicChannelQueueCommand extends QueueCommand {
     private final InetSocketAddress socketAddress;
 
     private CreateQuicChannelQueueCommand(
-            InetSocketAddress socketAddress, QuicStreamChannelFuture future) {
+            InetSocketAddress socketAddress, QuicStreamChannelPromise future) {
         this.socketAddress = socketAddress;
         this.parentChannel = future.getParentChannel();
         super.setPromise(future.getParentChannel().newPromise());
@@ -30,7 +30,7 @@ public class CreateQuicChannelQueueCommand extends QueueCommand {
     }
 
     public static CreateQuicChannelQueueCommand create(
-            InetSocketAddress socketAddress, QuicStreamChannelFuture future) {
+            InetSocketAddress socketAddress, QuicStreamChannelPromise future) {
         return new CreateQuicChannelQueueCommand(socketAddress, future);
     }
 
@@ -52,7 +52,7 @@ public class CreateQuicChannelQueueCommand extends QueueCommand {
                         if (future.isSuccess()) {
                             QuicChannel now = future.getNow();
                             System.out.println("QuicChannel 创建成功！" + now);
-                            connectionCache.putIfAbsent(hostName, now);
+                            connectionCache.put(hostName, now);
                             ChannelPromise channelPromise = this.getPromise();
                             channelPromise.setSuccess();
                         } else {

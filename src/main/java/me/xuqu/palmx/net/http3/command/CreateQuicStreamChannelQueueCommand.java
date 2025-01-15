@@ -8,6 +8,7 @@ import io.netty.incubator.codec.http3.Http3;
 import io.netty.incubator.codec.http3.Http3RequestStreamInitializer;
 import io.netty.incubator.codec.quic.QuicChannel;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
+import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -22,22 +23,24 @@ public class CreateQuicStreamChannelQueueCommand extends QueueCommand {
 
     private final InetSocketAddress address;
     private final ChannelFuture quicChannelFuture;
-    private final QuicStreamChannelFuture streamChannelFuture;
+    private final QuicStreamChannelPromise streamPromise;
+    private final DefaultPromise<Channel> channelDefaultPromise;
 
-    private CreateQuicStreamChannelQueueCommand(InetSocketAddress address, QuicStreamChannelFuture future,
-                                                ChannelFuture quicChannelFuture) {
+    private CreateQuicStreamChannelQueueCommand(InetSocketAddress address, QuicStreamChannelPromise streamPromise,
+                                                ChannelFuture quicChannelFuture, DefaultPromise<Channel> channelDefaultPromise) {
         this.address = address;
-        this.streamChannelFuture = future;
-        this.setPromise(future.getParentChannel().newPromise());
-        this.setChannel(future.getParentChannel());
+        this.streamPromise = streamPromise;
+        this.setPromise(streamPromise.getParentChannel().newPromise());
+        this.setChannel(streamPromise.getParentChannel());
         this.quicChannelFuture = quicChannelFuture;
+        this.channelDefaultPromise = channelDefaultPromise;
     }
 
     public static CreateQuicStreamChannelQueueCommand create(InetSocketAddress address,
-
-                                                             QuicStreamChannelFuture future,
-                                                             ChannelFuture enqueue) {
-        return new CreateQuicStreamChannelQueueCommand(address, future, enqueue);
+                                                             QuicStreamChannelPromise streamCommand,
+                                                             ChannelFuture channelFuture,
+                                                             DefaultPromise<Channel> channelDefaultPromise) {
+        return new CreateQuicStreamChannelQueueCommand(address, streamCommand, channelFuture,channelDefaultPromise);
     }
 
     @Override
@@ -58,21 +61,21 @@ public class CreateQuicStreamChannelQueueCommand extends QueueCommand {
                                 .addLast(new CommandOutBoundHandler());
                     }
                 };
+                System.out.println("quicChannel = " + quicChannel.isActive());
                 Http3.newRequestStream(quicChannel, initializer).addListener((GenericFutureListener<Future<QuicStreamChannel>>) quicStreamChannelFuture -> {
                     if (quicStreamChannelFuture.isSuccess()) {
                         log.info("QuicStreamChannel 创建成功！");
                         QuicStreamChannel quicStreamChannel = quicStreamChannelFuture.getNow();
-                        streamChannelFuture.complete(quicStreamChannel);
+                        channelDefaultPromise.setSuccess(quicStreamChannel);
                     } else {
                         log.info("QuicStreamChannel 创建失败！cause = {}", quicStreamChannelFuture.cause().getMessage());
-                        streamChannelFuture.completeExceptionally(quicStreamChannelFuture.cause());
+                        channelDefaultPromise.setFailure(quicStreamChannelFuture.cause());
                     }
                 });
             } else {
-                log.info("QuicStreamChannel 创建失败！cause = {}", streamChannelFuture.cause().getMessage());
-                streamChannelFuture.completeExceptionally(streamChannelFuture.cause());
+                log.info("quicChannelFuture 创建失败！cause = {}", quicChannelFuture.cause().getMessage());
+                channelDefaultPromise.setFailure(streamPromise.cause());
             }
-
         });
     }
 }

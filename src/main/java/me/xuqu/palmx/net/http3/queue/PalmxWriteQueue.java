@@ -5,12 +5,16 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 import me.xuqu.palmx.net.http3.command.QueueCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 // 参考 PendingWriteQueue
 public class PalmxWriteQueue extends BatchExecutorQueue<QueueCommand> {
+
+    private static final Logger log = LoggerFactory.getLogger(PalmxWriteQueue.class);
 
     public PalmxWriteQueue() {
     }
@@ -47,6 +51,7 @@ public class PalmxWriteQueue extends BatchExecutorQueue<QueueCommand> {
     @Override
     protected void flush(QueueCommand item) {
         try {
+            log.info("PalmxWriteQueue.command = {}", item.getClass().getName());
             Channel channel = item.getChannel();
             item.run(channel);
             channel.flush();
@@ -55,3 +60,5 @@ public class PalmxWriteQueue extends BatchExecutorQueue<QueueCommand> {
         }
     }
 }
+
+
